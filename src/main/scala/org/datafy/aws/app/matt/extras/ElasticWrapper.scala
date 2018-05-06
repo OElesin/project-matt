@@ -18,15 +18,18 @@ case class Artist(name: String)
 
 object ElasticWrapper {
 
+  private val HTTP_AUTH_USERNAME = System.getenv("ES_USERNAME")
+  private val HTTP_AUTH_PASSWD = System.getenv("ES_PASSWD")
+
   lazy val provider = {
     val provider = new BasicCredentialsProvider
-    val credentials = new UsernamePasswordCredentials("elastic", "arqXrvaUYvKcbmpr2N1MdC47")
+    val credentials = new UsernamePasswordCredentials(HTTP_AUTH_USERNAME, HTTP_AUTH_PASSWD)
     provider.setCredentials(AuthScope.ANY, credentials)
     provider
   }
 
   private val client = getClusterConnection()
-  private val INDEX_NAME = "macie_clone"
+  private val INDEX_NAME = "project_matt"
   private val TYPE_NAME = "scan_statistics"
 
   private def getClusterConnection() = {

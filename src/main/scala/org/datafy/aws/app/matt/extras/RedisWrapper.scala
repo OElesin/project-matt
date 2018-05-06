@@ -6,11 +6,18 @@ import com.typesafe.config.{Config, ConfigFactory}
 
 object RedisWrapper {
   val config: Config = ConfigFactory.load()
-  val host = config.getString("redis.host")
-  val port = config.getInt("redis.port")
-  val database = config.getInt("redis.db")
 
-  val clients = new RedisClientPool(host, port, database = database)
+  private val REDIS_HOST = System.getenv("REDIS_PASSWD")
+  private val REDIS_PORT = System.getenv("REDIS_DB").toInt
+  private val REDIS_DB = System.getenv("REDIS_DB").toInt
+  private val REDIS_PASSWD = System.getenv("REDIS_PASSWD")
+
+  val clients = new RedisClientPool(REDIS_HOST,
+    REDIS_PORT,
+    database = REDIS_DB,
+    secret = Some(REDIS_PASSWD)
+  )
+
 
   def getData(key: String) = {
     val payload = clients.withClient { client

@@ -19,7 +19,7 @@ object BaseClassifier extends LazyLogging {
       */
 
     // get last object and cache in redis
-    val redisReferenceKey = s"${bucketName}-${s3Prefix}"
+    val redisReferenceKey = generateReferenceKey(bucketName, s3Prefix)
     val lastScannedKey = ScanObjectsModel.getLastScannedFromRedis(redisReferenceKey)
     logger.info(s"Last Scanned S3 Key: ${lastScannedKey.orNull}")
 
@@ -64,6 +64,13 @@ object BaseClassifier extends LazyLogging {
       if(check) Utilities.getParseCompressedStream(inputStream)
       else Utilities.getParsePlainStream(inputStream)
     streamTextContent
+  }
+
+  private def generateReferenceKey(s3Bucket: String, s3Prefix: String) = {
+    var referenceKey = s"s3Key_${s3Bucket}"
+    if(!s3Prefix.isEmpty)
+      referenceKey += s":s3Prefix_${s3Prefix}"
+    referenceKey
   }
 
 }
