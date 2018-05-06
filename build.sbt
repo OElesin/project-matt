@@ -1,6 +1,6 @@
-name := """macie_clone"""
+name := """project_matt"""
 
-version := "1.0"
+version := "1.0-BETA"
 
 scalaVersion := "2.12.6"
 
@@ -42,3 +42,5 @@ libraryDependencies ++= Seq(
   "org.apache.hadoop" % "hadoop-client" % "2.6.0",
   "org.kohsuke.args4j" % "args4j-maven-plugin" % "2.33"
 )
+
+assemblyOutputPath in assembly := file("macie_clone/deploy_app/artifacts")
