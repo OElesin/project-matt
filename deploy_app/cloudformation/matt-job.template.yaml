@@ -26,9 +26,9 @@ Metadata:
           - TargetS3Prefix
     ParameterLabels:
       TargetS3Bucket:
-        default: !Sub "S3 Bucket your want to scan for PII in this region ${AWS::Region}"
+        default: "S3 Bucket your want to scan for PII in this region"
       TargetS3Prefix:
-        default: !Sub "Specify prefix inside the above bucket"
+        default: "Specify prefix inside the above bucket"
 Parameters:
   RedisHost:
     Type: String
