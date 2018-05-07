@@ -36,7 +36,7 @@ All compression file formats supported by Apache Tika are available.
 
 ### Deployment
 An AWS Cloudformation template that deploys the jar app as an AWS Batch job
-is available. [<img src="https://s3.amazonaws.com/cloudformation-examples/cloudformation-launch-stack.png" width="150"> ](). 
+is available. [<img src="https://s3.amazonaws.com/cloudformation-examples/cloudformation-launch-stack.png" width="150"> ](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/new?stackName=Project-Matt-S3-PII-Scan&templateURL=https://s3-eu-west-1.amazonaws.com/datafy-data-lake-public-artifacts/project-matt/cloudformation/matt-job.template.yaml). 
 
 **NOTE: You can only scan S3 buckets in the same region as where your template
 is deployed.**

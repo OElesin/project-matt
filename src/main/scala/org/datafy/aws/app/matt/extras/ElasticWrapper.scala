@@ -20,6 +20,9 @@ object ElasticWrapper {
 
   private val HTTP_AUTH_USERNAME = System.getenv("ES_USERNAME")
   private val HTTP_AUTH_PASSWD = System.getenv("ES_PASSWD")
+  private val ES_HOST = System.getenv("ES_HOST")
+
+  require(ES_HOST.isEmpty, "ENV Variable: ES_HOST must be available, format: `<hostname>:<port>`")
 
   lazy val provider = {
     val provider = new BasicCredentialsProvider
@@ -33,8 +36,7 @@ object ElasticWrapper {
   private val TYPE_NAME = "scan_statistics"
 
   private def getClusterConnection() = {
-    val uri = ElasticsearchClientUri("elasticsearch://" +
-      "76d089ba624e21e30ad9070afa13adc8.us-east-1.aws.found.io:9243?ssl=true")
+    val uri = ElasticsearchClientUri(s"elasticsearch://${ES_HOST}?ssl=true")
      HttpClient(uri, new RequestConfigCallback {
        override def customizeRequestConfig(requestConfigBuilder: Builder): Builder = {
          requestConfigBuilder

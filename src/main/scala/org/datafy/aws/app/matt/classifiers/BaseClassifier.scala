@@ -29,7 +29,7 @@ object BaseClassifier extends LazyLogging {
 
     val newLastScannedKey = ScanObjectsModel.saveLastScannedToRedis(redisReferenceKey, bucketObjects)
 
-    val totalSizeScanned = S3Manager.computeTotalObjectSize(bucketObjects).head
+    val totalSizeScanned: (String, Int) = S3Manager.computeTotalObjectSize(bucketObjects).head
     logger.info(s"Total size of scanned objects: ${totalSizeScanned._2}")
     // commence object scan here
     val payloadSummary = bucketObjects.map {
@@ -51,7 +51,8 @@ object BaseClassifier extends LazyLogging {
       s3Bucket=bucketName,
       lastScannedKey=newLastScannedKey,
       summaryStats=fullScanStats,
-      objectScanStats=objectScanStats
+      objectScanStats=objectScanStats,
+      totalObjectsSize = Some(totalSizeScanned._2)
     )
     println("Full scan stats " + scanStats)
     scanStats

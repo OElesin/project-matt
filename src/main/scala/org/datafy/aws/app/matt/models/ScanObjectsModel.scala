@@ -18,7 +18,8 @@ case class FullScanStats (
   s3Bucket: String,
   lastScannedKey: String,
   summaryStats: Seq[(String, Int)],
-  objectScanStats: Seq[ObjectScanStats]
+  objectScanStats: Seq[ObjectScanStats],
+  totalObjectsSize: Option[Int] = None
 ) extends ScanStats
 
 object ScanObjectsModel {

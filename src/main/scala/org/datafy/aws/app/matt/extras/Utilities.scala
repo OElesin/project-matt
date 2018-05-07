@@ -11,9 +11,6 @@ import org.apache.tika.metadata.serialization.JsonMetadata
 import org.apache.tika.parser.{AutoDetectParser, ParseContext}
 import org.apache.tika.parser.pkg.CompressorParser
 import org.apache.tika.sax.BodyContentHandler
-import org.visallo.web.structuredingest.core.model.ParseOptions
-import org.visallo.web.structuredingest.core.util.StructuredFileParserHandler
-import org.visallo.web.structuredingest.parquet.{ParquetParser, ParquetStructuredIngestParser}
 
 /**
   * @author: Datafy Ventures
@@ -61,17 +58,11 @@ object Utilities {
     bodyContentHandler.toString
   }
 
-  def getParseParquetStream(inputStream: InputStream): String = {
+  def getParseParquetStream(inputStream: InputStream)= {
     val bodyContentHandler = new BodyContentHandler()
     val fileMetadata = new Metadata()
     val parseContext = new ParseContext()
 
-    // Parquet parser
-    val parquetStructuredParser = new ParquetStructuredIngestParser()
-    val parquetParser = new ParquetParser()
-    new StructuredFileParserHandler()
-    parquetStructuredParser.ingest(inputStream, new ParseOptions(), new StructuredFileParserHandler())
-    bodyContentHandler.toString
   }
 
   @throws(classOf[IOException])

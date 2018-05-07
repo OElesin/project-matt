@@ -1,5 +1,77 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: 'AWS CloudFormation Template to deploy Project Matt to run in your AWS Account.'
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      -
+        Label:
+          default: "Redis Cluster Configuration Settings"
+        Parameters:
+          - RedisHost
+          - RedisPort
+          - RedisPasswd
+          - RedisDatabase
+      -
+        Label:
+          default: "Elasticsearch Cluster Configuration Settings"
+        Parameters:
+          - ElasticsearchHost
+          - ElasticsearchUser
+          - ElasticsearchPasswd
+      -
+        Label:
+          default: "AWS S3 Bucket and Prefix Paths"
+        Parameters:
+          - TargetS3Bucket
+          - TargetS3Prefix
+    ParameterLabels:
+      TargetS3Bucket:
+        default: !Sub "S3 Bucket your want to scan for PII in this region ${AWS::Region}"
+      TargetS3Prefix:
+        default: !Sub "Specify prefix inside the above bucket"
+Parameters:
+  RedisHost:
+    Type: String
+    Description: 'The host name of your redis cluster'
+    ConstraintDescription: 'Provide Redis Cluster host name: `RedisHost`'
+  RedisPort:
+    Type: Number
+    Description: 'The port name of your redis cluster'
+    ConstraintDescription: 'Provide Redis Cluster port number: `RedisPort`'
+    MinValue: 1150
+    MaxValue: 65535
+  RedisPasswd:
+    NoEcho: true
+    Type: String
+    AllowedPattern: ^[a-zA-Z0-9]*$
+    Description: 'The password name of your redis cluster: `RedisPasswd`'
+    Default: ''
+  RedisDatabase:
+    Type: String
+    Description: 'Redis database to use. Default is `0`'
+    Default: '0'
+  ElasticsearchHost:
+    Type: String
+    Description: 'Host name and port of your elasticsearch cluster'
+    ConstraintDescription: '`ElasticsearchHost` cannot be empty. Format: `<hostname>:<port>`'
+  ElasticsearchUser:
+    Type: String
+    Description: 'HTTP authentication username of your elasticsearch cluster'
+    ConstraintDescription: '`ElasticsearchUser` cannot be empty. E.g: elastic'
+  ElasticsearchPasswd:
+    NoEcho: true
+    Type: String
+    Description: 'HTTP authentication username of your elasticsearch cluster'
+    AllowedPattern: ^[a-zA-Z0-9]*$
+    ConstraintDescription: '`ElasticsearchPasswd` cannot be empty. E.g: somePassword555'
+  TargetS3Bucket:
+    Type: String
+    Description: 'AWS S3 Bucket to scan for PII. Specify without `s3://`'
+    ConstraintDescription: '`TargetS3Bucket` cannot be empty. E.g: some-s3-bucket'
+  TargetS3Prefix:
+    Type: String
+    Description: 'AWS S3 Prefix to scan for PII. Defaults to parent path in bucket'
+    Default: ''
 Resources:
   VPC:
     Type: AWS::EC2::VPC
@@ -59,8 +131,8 @@ Resources:
             Service: batch.amazonaws.com
           Action: sts:AssumeRole
       ManagedPolicyArns:
-      - arn:aws:iam::aws:policy/service-role/AWSBatchServiceRole
-      - arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess
+        - arn:aws:iam::aws:policy/service-role/AWSBatchServiceRole
+        - arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess
   IamInstanceProfile:
     Type: AWS::IAM::InstanceProfile
     Properties:
@@ -70,7 +142,7 @@ Resources:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
-        Version: '2008-10-17'
+        Version: '2012-10-17'
         Statement:
         - Sid: ''
           Effect: Allow
@@ -97,12 +169,31 @@ Resources:
     Properties:
       Type: container
       ContainerProperties:
-        Image: !Sub "137112412989.dkr.ecr.${AWS::Region}.amazonaws.com/amazonlinux:latest"
-        Vcpus: 2
-        Memory: 2000
+        Image: !Sub "514965996716.dkr.ecr.eu-west-1.amazonaws.com/datafy/project-matt:latest"
+        Vcpus: 8
+        Memory: 16000
         Command:
         - echo
         - Hello World, I am a high priority job
+        Environment:
+          - Name: MY_S3_BUCKET
+            Value: !Ref TargetS3Bucket
+          - Name: MY_S3_PREFIX
+            Value: !Ref TargetS3Prefix
+          - Name: REDIS_HOST
+            Value: !Ref RedisHost
+          - Name: REDIS_PASSWD
+            Value: !Ref RedisPasswd
+          - Name: REDIS_PORT
+            Value: !Ref RedisPort
+          - Name: REDIS_DB
+            Value: !Ref RedisDatabase
+          - Name: ES_HOST
+            Value: !Ref ElasticsearchHost
+          - Name: ES_USERNAME
+            Value: !Ref ElasticsearchUser
+          - Name: ES_PASSWD
+            Value: !Ref ElasticsearchPasswd
       RetryStrategy:
         Attempts: 1
   TestApplicationJob:
@@ -110,12 +201,31 @@ Resources:
     Properties:
       Type: container
       ContainerProperties:
-        Image: !Sub "137112412989.dkr.ecr.${AWS::Region}.amazonaws.com/amazonlinux:latest"
+        Image: !Sub "514965996716.dkr.ecr.eu-west-1.amazonaws.com/datafy/project-matt:latest"
         Vcpus: 2
         Memory: 2000
         Command:
         - echo
         - Hello World, I am a low priority job
+        Environment:
+        - Name: MY_S3_BUCKET
+          Value: !Ref TargetS3Bucket
+        - Name: MY_S3_PREFIX
+          Value: !Ref TargetS3Prefix
+        - Name: REDIS_HOST
+          Value: !Ref RedisHost
+        - Name: REDIS_PASSWD
+          Value: !Ref RedisPasswd
+        - Name: REDIS_PORT
+          Value: !Ref RedisPort
+        - Name: REDIS_DB
+          Value: !Ref RedisDatabase
+        - Name: ES_HOST
+          Value: !Ref ElasticsearchHost
+        - Name: ES_USERNAME
+          Value: !Ref ElasticsearchUser
+        - Name: ES_PASSWD
+          Value: !Ref ElasticsearchPasswd
       RetryStrategy:
         Attempts: 1
   HighPriorityJobQueue:
@@ -125,38 +235,7 @@ Resources:
       ComputeEnvironmentOrder:
       - Order: 1
         ComputeEnvironment:
-          Ref: OnDemandComputeEnvironment
-      - Order: 2
-        ComputeEnvironment:
           Ref: SpotComputeEnvironment
-  LowPriorityJobQueue:
-    Type: AWS::Batch::JobQueue
-    Properties:
-      JobQueueName: LowPriorityBatchCloudformationJobqueue
-      Priority: 2
-      ComputeEnvironmentOrder:
-      - Order: 1
-        ComputeEnvironment:
-          Ref: SpotComputeEnvironment
-  OnDemandComputeEnvironment:
-    Type: AWS::Batch::ComputeEnvironment
-    Properties:
-      Type: MANAGED
-      ComputeResources:
-        Type: EC2
-        MinvCpus: 0
-        DesiredvCpus: 0
-        MaxvCpus: 64
-        InstanceTypes:
-        - optimal
-        Subnets:
-        - Ref: Subnet
-        SecurityGroupIds:
-        - Ref: SecurityGroup
-        InstanceRole:
-          Ref: IamInstanceProfile
-      ServiceRole:
-        Ref: BatchServiceRole
   SpotComputeEnvironment:
     Type: AWS::Batch::ComputeEnvironment
     Properties:
@@ -189,12 +268,6 @@ Outputs:
   HighPriorityJobQueueArn:
     Value:
       Ref: HighPriorityJobQueue
-  LowPriorityJobQueueArn:
-    Value:
-      Ref: LowPriorityJobQueue
-  OnDemandComputeEnvironmentArn:
-    Value:
-      Ref: OnDemandComputeEnvironment
   SpotComputeEnvironmentArn:
     Value:
       Ref: SpotComputeEnvironment

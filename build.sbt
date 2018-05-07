@@ -11,6 +11,7 @@ val elastic4sVersion = "5.6.6"
 dependencyOverrides += "com.fasterxml.jackson.core" % "jackson-core" % "2.8.7"
 dependencyOverrides += "com.fasterxml.jackson.core" % "jackson-databind" % "2.8.7"
 dependencyOverrides += "com.fasterxml.jackson.module" % "jackson-module-scala_2.12" % "2.8.7"
+dependencyOverrides += "org.apache.logging.log4j" % "log4j-core" % "2.11.0"
 
 libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-actor" % "2.4.16",
@@ -38,9 +39,16 @@ libraryDependencies ++= Seq(
   "org.elasticsearch" % "elasticsearch" % "6.2.4",
   "org.apache.commons" % "commons-io" % "1.3.2",
   "io.dataapps.chlorine" % "chlorine-finder" % "1.1.5",
-  "org.visallo" % "visallo-web-structured-ingest-parquet" % "4.0.0",
-  "org.apache.hadoop" % "hadoop-client" % "2.6.0",
   "org.kohsuke.args4j" % "args4j-maven-plugin" % "2.33"
 )
 
-assemblyOutputPath in assembly := file("macie_clone/deploy_app/artifacts")
+assemblyMergeStrategy in assembly := {
+  case PathList("META-INF", xs @ _*) => MergeStrategy.discard
+  case x => MergeStrategy.first
+}
+
+lazy val execScript = taskKey[Unit]("Execute the shell script")
+
+execScript := {
+  "aws s3 cp deploy_app/artifacts/project-matt_1.0-BETA.jar s3://datafy-data-lake-public-artifacts/project-matt/ --acl public-read" !
+}

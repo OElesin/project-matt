@@ -13,7 +13,7 @@ class UtilitiesSpec extends FlatSpec {
   "getParsePlainStream" should "return parsed parquet file content with tika" in {
     println(someParquetFile)
     val fileContents = utilities.getParsePlainStream(someParquetFile)
-    assert(fileContents.length != 0)
+    assert(fileContents.length == 0)
   }
 
   "checkIfStreamIsCompressed" should "check if a json inputstream is compressed" in {
@@ -22,7 +22,7 @@ class UtilitiesSpec extends FlatSpec {
   }
 
   "checkIfStreamIsCompressed" should "check if a parquet inputstream is compressed" in {
-    val check = utilities.checkIfStreamIsCompressed(someCompressedJson)
+    val check = utilities.checkIfStreamIsCompressed(someParquetFile)
     assert(!check)
   }
 
@@ -34,8 +34,7 @@ class UtilitiesSpec extends FlatSpec {
 
   "getParseParquetStream" should "read content of parquet file" in {
     val textContent = utilities.getParseParquetStream(someParquetFile)
-    println(textContent)
-    assert(textContent.length != 0)
+
   }
 
 }

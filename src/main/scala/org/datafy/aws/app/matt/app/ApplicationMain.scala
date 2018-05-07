@@ -5,9 +5,11 @@ import akka.actor.{ActorSystem, Props}
 object ApplicationMain extends App {
 
     val system = ActorSystem("MyPIIScannerActorSystem")
-    println(System.getenv("MY_S3_BUCKET"))
+
     val s3BucketName = System.getenv("MY_S3_BUCKET")
     val s3Prefix = System.getenv("MY_S3_PREFIX")
+
+    require(s3BucketName.isEmpty, "ENV Variable: MY_S3_BUCKET must be available")
 
     val objectScanRequestActor = system.actorOf(
       Props(new ScanRequestActor(bucketName=s3BucketName, s3Prefix = Some(s3Prefix)))
