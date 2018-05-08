@@ -11,7 +11,7 @@ val elastic4sVersion = "5.6.6"
 dependencyOverrides += "com.fasterxml.jackson.core" % "jackson-core" % "2.8.7"
 dependencyOverrides += "com.fasterxml.jackson.core" % "jackson-databind" % "2.8.7"
 dependencyOverrides += "com.fasterxml.jackson.module" % "jackson-module-scala_2.12" % "2.8.7"
-dependencyOverrides += "org.apache.logging.log4j" % "log4j-core" % "2.11.0"
+dependencyOverrides += "org.apache.logging.log4j" % "log4j-core" % "2.9.0"
 
 libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-actor" % "2.4.16",
@@ -46,6 +46,8 @@ assemblyMergeStrategy in assembly := {
   case PathList("META-INF", xs @ _*) => MergeStrategy.discard
   case x => MergeStrategy.first
 }
+
+assemblyOutputPath in assembly := file("deploy_app/artifacts/project-matt_1.0-BETA.jar")
 
 lazy val execScript = taskKey[Unit]("Execute the shell script")
 
