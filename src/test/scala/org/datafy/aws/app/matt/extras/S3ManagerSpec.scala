@@ -10,6 +10,8 @@ class S3ManagerSpec extends FlatSpec {
   val testBucket = "aws-athena-query-results-514965996716-eu-west-1"
   val testObjectKey = "Unsaved/2017/12/30/03b1b25d-9c7a-4000-b24f-58df48064608.csv"
 
+  /**
+
   "getMyBucketsSummary" should "return all my buckets summaries" in {
     val buckets = s3Manager.getMyBucketsSummary()
     assert(buckets.length != 0)
@@ -24,5 +26,6 @@ class S3ManagerSpec extends FlatSpec {
     val contentStream = s3Manager.getObjectContentAsStream(testBucket, testObjectKey)
     assert(contentStream.isInstanceOf[InputStream])
   }
+    */
 
 }
