@@ -1,15 +1,28 @@
 language: scala
 scala:
-- 2.11.2
+  - 2.11.2
 env:
   - AWS_DEFAULT_REGION=eu-west-1
-deploy:
-  provider: s3
-  access_key_id: AKIAIF3BLLM5VMAJMY5Q
-  secret_access_key:
-    secure: MovnbK+JOEIJr6ouRuPpiSpuORH0inJK+annQNJSwzlXGcW4Dy06b+TOpdzIcZylfCLwqqBjWrfldGbKVlRR+CzVva7NKpTuqEvS+ZBoE/YPab8AO6sq2LdsebHPFl7RcA7XJmT8uFbxmGbrkDgK0PREvfUY/DlOBWz1g9VevdZXN82O5OjVTVzkfM+aCi9nfb1FCt1GhspDi6IGkEbMdev0kStIcW1xRhFTG1qHBNAPe/yHMQsWcCe0bXDXZlUE/usPiRRZXxEPQJg003TBvVWHtqEPquXetrDShW72lovWaetPDJZ31O/uDO0mxxulPcPzUAgrLYBMUpL8wICP8MZQ6JmiK2DRf9fZz1YdnBTqkF5hb+05vD5b1QD2rxiGPdimyp//zhz3N5esvid8MFyb2kplaMONdNbkoL8qxb4haVumvM7+T2QExKmM+yK+oYXLMBFZ2jNBqKNTVo8PVoiUUVIfhJTbs1euKzk5v76dtWeh3SC4KvpW7wur9wwqSHpHcXNe1YFBXRouyzy245VjQse61irJGI12mvD/meGFTb9ZAI2p7WeHbKaqrT2O+1J+3pdRDlcwRxFdeXkmjX+dcvvUncC84mYdhSO7JN9JuC+sxTY35cea2TLtKrFUghq+sMaAvU6tEHL90BjuPTsZ2kbJ4eOD7zF2AskLweA=
-  bucket: datafy-data-lake-public-artifacts
-  skip_cleanup: true
-  acl: public_read
-  region: eu-west-1
-  upload-dir: project-matt
+
+script:
+  - sbt -jvm-opts travis/jvmopts.compile compile
+  - sbt assembly
+
+matrix:
+	include:
+		- scala: 2.12.2
+		  script: "sbt clean"
+  		- scala: 2.12.2
+		  script: "sbt assembly"
+
+        - deploy:
+          provider: s3
+          access_key_id: AKIAIF3BLLM5VMAJMY5Q
+          secret_access_key:
+            secure: MovnbK+JOEIJr6ouRuPpiSpuORH0inJK+annQNJSwzlXGcW4Dy06b+TOpdzIcZylfCLwqqBjWrfldGbKVlRR+CzVva7NKpTuqEvS+ZBoE/YPab8AO6sq2LdsebHPFl7RcA7XJmT8uFbxmGbrkDgK0PREvfUY/DlOBWz1g9VevdZXN82O5OjVTVzkfM+aCi9nfb1FCt1GhspDi6IGkEbMdev0kStIcW1xRhFTG1qHBNAPe/yHMQsWcCe0bXDXZlUE/usPiRRZXxEPQJg003TBvVWHtqEPquXetrDShW72lovWaetPDJZ31O/uDO0mxxulPcPzUAgrLYBMUpL8wICP8MZQ6JmiK2DRf9fZz1YdnBTqkF5hb+05vD5b1QD2rxiGPdimyp//zhz3N5esvid8MFyb2kplaMONdNbkoL8qxb4haVumvM7+T2QExKmM+yK+oYXLMBFZ2jNBqKNTVo8PVoiUUVIfhJTbs1euKzk5v76dtWeh3SC4KvpW7wur9wwqSHpHcXNe1YFBXRouyzy245VjQse61irJGI12mvD/meGFTb9ZAI2p7WeHbKaqrT2O+1J+3pdRDlcwRxFdeXkmjX+dcvvUncC84mYdhSO7JN9JuC+sxTY35cea2TLtKrFUghq+sMaAvU6tEHL90BjuPTsZ2kbJ4eOD7zF2AskLweA=
+          bucket: datafy-data-lake-public-artifacts
+          skip_cleanup: true
+          acl: public_read
+          region: eu-west-1
+          local_dir: deploy_app_artifacts
+          upload-dir: project-matt
