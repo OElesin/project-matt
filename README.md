@@ -1,6 +1,8 @@
 Project Matt: AWS S3 PII Scanner
 =========================
 
+[![Build Status](https://travis-ci.org/OElesin/project-matt.svg?branch=master)](https://travis-ci.org/OElesin/project-matt)
+
 This project was created to help to scan your AWS S3 buckets for
 PII data. The app leverages the scale and cost of AWS services ensuring
 that you only pay for what you use.
