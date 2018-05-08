@@ -1,6 +1,8 @@
 language: scala
 scala:
 - 2.11.2
+env:
+  - AWS_DEFAULT_REGION=eu-west-1
 deploy:
   provider: s3
   access_key_id: AKIAIF3BLLM5VMAJMY5Q

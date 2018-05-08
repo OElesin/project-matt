@@ -4,23 +4,10 @@ var AWS = require('aws-sdk');
 
 var batch = new AWS.Batch();
 
-var cloudformation = new AWS.Cloudformation();
-
 // get exports
 var jobQueue = ""
 var jobName = ""
 var jobDefinition = ""
-
-var redisHost = "",
-    redisPasswd = "",
-    redisPort = ""
-
-var esHost = "",
-    esUser = "",
-    esPasswd = ""
-
-var s3Bucket = "",
-    s3Prefix = ""
 
 
 // job params
@@ -33,5 +20,9 @@ var params = {
 
 exports.handler = function(events, context) {
     console.log("Initializing lambda to call AWS Batch")
+    batch.submitJob(params, function(err, data) {
+        if (err) console.log(err, err.stack);
+        else console.log(data);
+    })
 
 }

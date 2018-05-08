@@ -5,6 +5,12 @@ Metadata:
     ParameterGroups:
       -
         Label:
+          default: "AWS S3 Bucket and Prefix Paths"
+        Parameters:
+          - TargetS3Bucket
+          - TargetS3Prefix
+      -
+        Label:
           default: "Redis Cluster Configuration Settings"
         Parameters:
           - RedisHost
@@ -18,12 +24,6 @@ Metadata:
           - ElasticsearchHost
           - ElasticsearchUser
           - ElasticsearchPasswd
-      -
-        Label:
-          default: "AWS S3 Bucket and Prefix Paths"
-        Parameters:
-          - TargetS3Bucket
-          - TargetS3Prefix
     ParameterLabels:
       TargetS3Bucket:
         default: "S3 Bucket your want to scan for PII in this region"
@@ -236,6 +236,29 @@ Resources:
       - Order: 1
         ComputeEnvironment:
           Ref: SpotComputeEnvironment
+
+  BatchJobLambdaScheduler:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.handler
+      Runtime: nodejs6.2
+      CodeUri: index.js
+      VpcConfig:
+        Subnets:
+        - Ref: Subnet
+        SecurityGroupIds:
+        - Ref: SecurityGroup
+#      Environment:
+#        Variables:
+#          JobName: !Ref ProdApplicationJob
+#          JobQueue: !Ref HighPriorityJobQueue
+#          JobDefinition: !GetAtt ProdApplicationJob.jobDefinitionName
+      Events:
+        StartJob:
+          Type: Schedule
+          Properties:
+            Schedule: rate(1 day)
+
   SpotComputeEnvironment:
     Type: AWS::Batch::ComputeEnvironment
     Properties:
@@ -271,3 +294,4 @@ Outputs:
   SpotComputeEnvironmentArn:
     Value:
       Ref: SpotComputeEnvironment
+Transform: AWS::Serverless-2016-10-31
