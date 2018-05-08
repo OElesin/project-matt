@@ -22,7 +22,7 @@ object ElasticWrapper {
   private val HTTP_AUTH_PASSWD = System.getenv("ES_PASSWD")
   private val ES_HOST = System.getenv("ES_HOST")
 
-  require(ES_HOST.isEmpty, "ENV Variable: ES_HOST must be available, format: `<hostname>:<port>`")
+  require(!ES_HOST.isEmpty, "ENV Variable: ES_HOST must be available, format: `<hostname>:<port>`")
 
   lazy val provider = {
     val provider = new BasicCredentialsProvider

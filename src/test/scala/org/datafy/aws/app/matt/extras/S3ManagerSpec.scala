@@ -6,7 +6,7 @@ import org.scalatest.FlatSpec
 
 class S3ManagerSpec extends FlatSpec {
 
-  val s3Manager = S3Manager
+//  val s3Manager = S3Manager
   val testBucket = "aws-athena-query-results-514965996716-eu-west-1"
   val testObjectKey = "Unsaved/2017/12/30/03b1b25d-9c7a-4000-b24f-58df48064608.csv"
 

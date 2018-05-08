@@ -8,16 +8,18 @@ object RedisWrapper {
   val config: Config = ConfigFactory.load()
 
   private val REDIS_HOST = System.getenv("REDIS_HOST")
-  private val REDIS_PORT = System.getenv("REDIS_DB").toInt
-  private val REDIS_DB = Some(System.getenv("REDIS_DB").toInt)
+  private val REDIS_PORT = System.getenv("REDIS_PORT").toInt
+  private val REDIS_DB = Some(System.getenv("REDIS_DB"))
   private val REDIS_PASSWD = System.getenv("REDIS_PASSWD")
 
-  require(REDIS_HOST.isEmpty, "ENV Variable: REDIS_HOST must be available")
-  require(REDIS_PORT.isNaN, "ENV Variable: REDIS_HOST must be available")
+  require(!REDIS_HOST.isEmpty, "ENV Variable: REDIS_HOST must be available")
+  require(!REDIS_PORT.isNaN, "ENV Variable: REDIS_PORT must be available")
+
+  println(REDIS_DB.orNull)
 
   val clients = new RedisClientPool(REDIS_HOST,
     REDIS_PORT,
-    database = REDIS_DB.getOrElse(0),
+    database = 0,
     secret = Some(REDIS_PASSWD)
   )
 
