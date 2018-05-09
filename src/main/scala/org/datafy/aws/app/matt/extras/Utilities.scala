@@ -37,7 +37,6 @@ object Utilities {
       return "Could not scan inputStream less than 0 bytes"
     }
     autoDetectParser.parse(inputStream, bodyContentHandler, fileMetadata)
-    val jsonMetadata = JsonMetadata.toJson(fileMetadata, new StringWriter())
     return bodyContentHandler.toString
   }
 
@@ -59,10 +58,16 @@ object Utilities {
   }
 
   def getParseParquetStream(inputStream: InputStream)= {
+    /**
+      * Should parse parquet files
+      */
     val bodyContentHandler = new BodyContentHandler()
     val fileMetadata = new Metadata()
     val parseContext = new ParseContext()
 
+    val parquetParser = new TikaParquetParser()
+    parquetParser.parse(inputStream, bodyContentHandler, fileMetadata, parseContext)
+    bodyContentHandler.toString
   }
 
   @throws(classOf[IOException])

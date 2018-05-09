@@ -39,7 +39,16 @@ libraryDependencies ++= Seq(
   "org.elasticsearch" % "elasticsearch" % "6.2.4",
   "org.apache.commons" % "commons-io" % "1.3.2",
   "io.dataapps.chlorine" % "chlorine-finder" % "1.1.5",
-  "org.kohsuke.args4j" % "args4j-maven-plugin" % "2.33"
+  "org.kohsuke.args4j" % "args4j-maven-plugin" % "2.33",
+  "org.apache.parquet" % "parquet-common" % "1.10.0",
+  "org.apache.parquet" % "parquet-column" % "1.10.0",
+  "org.apache.parquet" % "parquet-hadoop" % "1.10.0",
+  "org.apache.parquet" % "parquet-encoding" % "1.10.0",
+  "org.apache.parquet" % "parquet-scala_2.10" % "1.10.0",
+  "org.apache.hadoop" % "hadoop-common" % "2.7.2" % "provided",
+  "org.apache.parquet" % "parquet-tools" % "1.10.0",
+  "org.apache.hadoop" % "hadoop-mapreduce-client-core" % "2.7.2",
+  "org.scalamock" %% "scalamock" % "4.1.0" % Test
 )
 
 assemblyMergeStrategy in assembly := {

@@ -30,8 +30,11 @@ words in scanned files.
 ### Supported File Formats
 Project Matt uses Apache Tika under the hood for file parsing. Hence, all file formats 
 supported out-of-the-box by Apache Tika are supported - including media files.
-Currently, we cannot guarantee support for parsing parquet file formats. This is 
-in active development and would be released within the next minor upgrades.
+~~Currently, we cannot guarantee support for parsing parquet file formats. 
+This is in active development and would be released within the next minor upgrades.~~
+
+**Reading Parquet Files is now Supported** 
+
 
 All compression file formats supported by Apache Tika are available.
 

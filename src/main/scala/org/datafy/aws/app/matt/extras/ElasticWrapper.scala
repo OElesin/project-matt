@@ -14,7 +14,6 @@ import org.elasticsearch.client.RestClientBuilder.{HttpClientConfigCallback, Req
 import com.sksamuel.elastic4s.circe._
 import io.circe.generic.auto._
 
-case class Artist(name: String)
 
 object ElasticWrapper {
 
@@ -55,12 +54,33 @@ object ElasticWrapper {
     response.clusterName
   }
 
+  def createIndexIfNotExists() ={
+    client.execute {
+      createIndex(INDEX_NAME) indexSetting ("mapping.ignore_malformed", true) mappings
+        mapping(TYPE_NAME).fields(
+          textField("s3Bucket"),
+          textField("lastScannedKey"),
+          dateField("scannedDate")
+        )
+    }.await
+  }
+
+  def checkIndex() = {
+    val response = client.execute(
+      indexExists(INDEX_NAME)
+    ).await
+    response.exists
+  }
+
   def saveDocument(fullScanStats: FullScanStats) = {
     /**
       * someCaseClass should be changed to a generic case class holder
       */
+    if(!checkIndex)
+      createIndexIfNotExists()
+
     client.execute {
-      indexInto(INDEX_NAME / TYPE_NAME) doc fullScanStats refresh(RefreshPolicy.IMMEDIATE)
+      indexInto(INDEX_NAME / TYPE_NAME) doc fullScanStats refresh RefreshPolicy.IMMEDIATE
     }.await
   }
 

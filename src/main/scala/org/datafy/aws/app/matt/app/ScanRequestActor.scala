@@ -30,7 +30,7 @@ class ScanRequestActor(val bucketName: String = null, val s3Prefix: Option[Strin
 }
 
 object ScanRequestActor {
-  val props = Props[ScanRequestActor]
+  val props: Props = Props[ScanRequestActor]
   case object Initialize
   case class ScanRequestMessage(fullScanStats: FullScanStats)
 }

@@ -58,13 +58,18 @@ object BaseClassifier extends LazyLogging {
     scanStats
   }
 
-  private def scanInputStream(inputStream: InputStream) = {
+  private def scanInputStream(inputStream: InputStream): String = {
     // check if input stream is compressed
     val check = Utilities.checkIfStreamIsCompressed(inputStream)
-    val streamTextContent =
-      if(check) Utilities.getParseCompressedStream(inputStream)
-      else Utilities.getParsePlainStream(inputStream)
-    streamTextContent
+
+    if(check)
+      return Utilities.getParseCompressedStream(inputStream)
+
+    try {
+      Utilities.getParseParquetStream(inputStream)
+    } catch {
+      case _: Throwable => Utilities.getParsePlainStream(inputStream)
+    }
   }
 
   private def generateReferenceKey(s3Bucket: String, s3Prefix: String) = {

@@ -7,11 +7,10 @@ class UtilitiesSpec extends FlatSpec {
 
   val utilities = Utilities
 
-  val someParquetFile = getClass.getResourceAsStream("/UtilitiesSpec/part-r-00004.gz.parquet")
+  val someParquetFile = getClass.getResourceAsStream("/UtilitiesSpec/userdata1.parquet")
   val someCompressedJson = getClass.getResourceAsStream("/UtilitiesSpec/sample-data.json.gz")
 
-  "getParsePlainStream" should "return parsed parquet file content with tika" in {
-    println(someParquetFile)
+  "getParsePlainStream" should "return empty string when parsing parquet" in {
     val fileContents = utilities.getParsePlainStream(someParquetFile)
     assert(fileContents.length == 0)
   }
@@ -34,7 +33,7 @@ class UtilitiesSpec extends FlatSpec {
 
   "getParseParquetStream" should "read content of parquet file" in {
     val textContent = utilities.getParseParquetStream(someParquetFile)
-
+    assert(textContent.length != 0)
   }
 
 }

@@ -15,7 +15,6 @@ object RedisWrapper {
   require(!REDIS_HOST.isEmpty, "ENV Variable: REDIS_HOST must be available")
   require(!REDIS_PORT.isNaN, "ENV Variable: REDIS_PORT must be available")
 
-  println(REDIS_DB.orNull)
 
   val clients = new RedisClientPool(REDIS_HOST,
     REDIS_PORT,

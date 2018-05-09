@@ -1,5 +1,14 @@
 package org.datafy.aws.app.matt.classifiers
 
-class KeyWordsClassifier {
+object KeyWordsClassifier {
+
+  def scanTextContent(rawContent: List[String]): Unit = {
+
+  }
+
+  def scanTextContent(rawContent: String): Unit = {
+
+  }
+
 
 }
