@@ -78,6 +78,6 @@ Cost estimation does not cover supporting infrastructure such as Elasticsearch a
 
 
 ### License
-Usage is licensed under Apache License 2.0
+Usage is licensed under MIT License
 
 
