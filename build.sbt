@@ -11,7 +11,6 @@ val elastic4sVersion = "5.6.6"
 dependencyOverrides += "com.fasterxml.jackson.core" % "jackson-core" % "2.8.7"
 dependencyOverrides += "com.fasterxml.jackson.core" % "jackson-databind" % "2.8.7"
 dependencyOverrides += "com.fasterxml.jackson.module" % "jackson-module-scala_2.12" % "2.8.7"
-dependencyOverrides += "org.apache.logging.log4j" % "log4j-core" % "2.9.0"
 
 libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-actor" % "2.4.16",
@@ -20,7 +19,7 @@ libraryDependencies ++= Seq(
   "org.apache.tika" % "tika-core" % tikaVersion,
   "org.apache.tika" % "tika-parsers" % tikaVersion,
   "org.apache.tika" % "tika-serialization" % tikaVersion,
-  "com.amazonaws" % "aws-java-sdk" % awsSDKVersion,
+  "com.amazonaws" % "aws-java-sdk-s3" % awsSDKVersion,
   "net.debasishg"  %% "redisclient" % "3.6",
   "org.visallo" % "visallo-core" % "4.0.0",
   "org.json" % "json" % "20180130",
@@ -34,19 +33,26 @@ libraryDependencies ++= Seq(
   "com.sksamuel.elastic4s" %% "elastic4s-play-json" % elastic4sVersion,
   "com.sksamuel.elastic4s" %% "elastic4s-circe" % elastic4sVersion,
   "com.sksamuel.elastic4s" %% "elastic4s-json4s" % elastic4sVersion,
+  // logging libs
+  "org.apache.logging.log4j" % "log4j-core" % "2.9.0",
+  "org.apache.logging.log4j" % "log4j-api" % "2.9.0",
+  "org.apache.logging.log4j" % "log4j-to-slf4j" % "2.9.0",
+  "org.slf4j" % "slf4j-simple" % "1.7.21",
+
   "ch.qos.logback" % "logback-classic" % "1.2.3",
   "com.typesafe.scala-logging" %% "scala-logging" % "3.9.0",
-  "org.apache.logging.log4j" % "log4j-to-slf4j" % "2.8.2",
+  "commons-codec" % "commons-codec" % "1.9",
   "org.elasticsearch" % "elasticsearch" % elastic4sVersion,
   "org.apache.commons" % "commons-io" % "1.3.2",
   "io.dataapps.chlorine" % "chlorine-finder" % "1.1.5",
   "org.kohsuke.args4j" % "args4j-maven-plugin" % "2.33",
+  // parquet
   "org.apache.parquet" % "parquet-common" % "1.10.0",
   "org.apache.parquet" % "parquet-column" % "1.10.0",
   "org.apache.parquet" % "parquet-hadoop" % "1.10.0",
   "org.apache.parquet" % "parquet-encoding" % "1.10.0",
   "org.apache.parquet" % "parquet-scala_2.10" % "1.10.0",
-  "org.apache.hadoop" % "hadoop-common" % "2.7.2" % "provided",
+  "org.apache.hadoop" % "hadoop-common" % "2.7.2",
   "org.apache.parquet" % "parquet-tools" % "1.10.0",
   "org.apache.hadoop" % "hadoop-mapreduce-client-core" % "2.7.2",
   "org.scalamock" %% "scalamock" % "4.1.0" % Test

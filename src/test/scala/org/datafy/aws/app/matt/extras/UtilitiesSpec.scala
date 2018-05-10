@@ -29,8 +29,9 @@ class UtilitiesSpec extends FlatSpec {
   }
 
   "getParseParquetStream" should "read content of parquet file" in {
-    val someParquetFile = getClass.getResourceAsStream("/UtilitiesSpec/part-r-00004.gz.parquet")
+    val someParquetFile = getClass.getResourceAsStream("/UtilitiesSpec/userdata1.parquet")
     val textContent = utilities.getParseParquetStream(someParquetFile)
+    println(textContent)
     assert(textContent.length != 0)
   }
 

@@ -4,9 +4,6 @@ services:
 - docker
 scala:
 - 2.11.2
-env:
-- AWS_DEFAULT_REGION=eu-west-1
-- JVM_OPTS=-Xss16m
 script:
 - sbt -jvm-opts travis/jvmopts ++$TRAVIS_SCALA_VERSION clean test assembly
 deploy:

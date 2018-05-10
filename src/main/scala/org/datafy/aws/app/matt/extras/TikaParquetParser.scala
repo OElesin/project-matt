@@ -15,9 +15,12 @@ import org.apache.hadoop.fs.Path
 import org.apache.parquet.hadoop.ParquetFileReader
 import org.apache.parquet.hadoop.ParquetReader
 import org.apache.parquet.format.converter.ParquetMetadataConverter
+import org.apache.parquet.hadoop.util.HadoopInputFile
+import org.apache.parquet.tools.json.JsonRecordFormatter
 import org.apache.parquet.tools.read.{SimpleReadSupport, SimpleRecord}
 import org.apache.tika.exception.TikaException
 import org.apache.tika.sax.XHTMLContentHandler
+
 import scala.util.Random
 
 
@@ -38,12 +41,13 @@ class TikaParquetParser extends AbstractParser {
             metadata: Metadata, context: ParseContext): Unit = {
     // create temp file from stream
     val fileNamePrefix = Random.alphanumeric.take(5).mkString
-    val tempFile = File.createTempFile(s"parquet-${fileNamePrefix}", "tmp")
+    val tempFile = File.createTempFile(s"parquet-${fileNamePrefix}", ".parquet")
     IOUtils.copy(stream, new FileOutputStream(tempFile))
+
     val conf = new Configuration()
     val path = new Path(tempFile.getAbsolutePath)
-    stream.close()
     val parquetMetadata = ParquetFileReader.readFooter(conf, path, ParquetMetadataConverter.NO_FILTER)
+    var defaultReader: ParquetReader[SimpleRecord] = null
 
     val columns = parquetMetadata.getFileMetaData.getSchema.getFields
     metadata.set(CONTENT_TYPE, PARQUET_RAW.toString)
@@ -52,16 +56,30 @@ class TikaParquetParser extends AbstractParser {
 
     val xhtml = new XHTMLContentHandler(handler, metadata)
     xhtml.startDocument()
+    xhtml.startElement("p")
+
+    // ::TODO:: ensure parquet reader reads all files not only file row
     try {
-      xhtml.startElement("p")
-      val parquetReader = ParquetReader.builder(new SimpleReadSupport(), new Path(tempFile.getAbsolutePath)).build()
-      val parquetRecordValues = parquetReader.read().getValues().asScala.toSet[SimpleRecord.NameValue]
+      defaultReader = ParquetReader.builder(new SimpleReadSupport(), new Path(tempFile.getAbsolutePath)).build()
+      if(defaultReader.read() != null) {
+        val values: SimpleRecord = defaultReader.read()
+        val jsonFormatter = JsonRecordFormatter.fromSchema(parquetMetadata.getFileMetaData.getSchema)
 
-      val charset = parquetRecordValues.mkString(", ")
+        val textContent: String = jsonFormatter.formatRecord(values)
+        xhtml.characters(textContent)
+        xhtml.endElement("p")
+        xhtml.endDocument()
+      }
 
-      xhtml.characters(charset)
-      xhtml.endElement("p")
-      xhtml.endDocument()
+    } catch {
+        case e: Throwable => e.printStackTrace()
+          if (defaultReader != null) {
+          try {
+            defaultReader.close()
+          } catch{
+            case _: Throwable =>
+          }
+        }
     } finally {
       if (tempFile != null) tempFile.delete()
     }

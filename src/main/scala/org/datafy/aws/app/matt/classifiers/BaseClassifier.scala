@@ -14,17 +14,12 @@ import com.typesafe.scalalogging._
 object BaseClassifier extends LazyLogging {
 
   def setS3ScanInputPath(bucketName: String, s3Prefix: String) = {
-    /**
-      * get s3 bucket and path to scan
-      */
-
     // get last object and cache in redis
     val redisReferenceKey = generateReferenceKey(bucketName, s3Prefix)
     val lastScannedKey = ScanObjectsModel.getLastScannedFromRedis(redisReferenceKey)
-    logger.info(s"Last Scanned S3 Key: ${lastScannedKey.orNull}")
+    logger.info(s"Last Scanned S3 Key: ${redisReferenceKey}")
 
     val bucketObjects: List[S3KeySummary] = S3Manager.getBucketObjects(bucketName, s3Prefix, lastScannedKey)
-
     logger.info(s"Total Number of S3 Objects for scanning: ${bucketObjects.length}")
 
     val newLastScannedKey = ScanObjectsModel.saveLastScannedToRedis(redisReferenceKey, bucketObjects)
@@ -35,7 +30,8 @@ object BaseClassifier extends LazyLogging {
     val payloadSummary = bucketObjects.map {
       s3Object =>
         val s3ObjectInputStream = S3Manager.getObjectContentAsStream(s3Object.bucketName, s3Object.key)
-        val textContent = this.scanInputStream(s3ObjectInputStream)
+        val textContent = this.scanInputStream(s3ObjectInputStream, s3Object.key)
+
         val objectStats: Seq[(String, Int)] = RegexClassifier.scanTextContent(textContent).computeRiskStats()
         val objectStatsSummary =  ObjectScanStats(s3Key=s3Object.key, objectSummaryStats=objectStats)
         (textContent, objectStatsSummary)
@@ -54,22 +50,19 @@ object BaseClassifier extends LazyLogging {
       objectScanStats=objectScanStats,
       totalObjectsSize = Some(totalSizeScanned._2)
     )
-    println("Full scan stats " + scanStats)
     scanStats
   }
 
-  private def scanInputStream(inputStream: InputStream): String = {
+  private def scanInputStream(inputStream: InputStream, s3Key: String): String = {
     // check if input stream is compressed
-    val check = Utilities.checkIfStreamIsCompressed(inputStream)
+    if (s3Key.contains("parquet"))
+      return Utilities.getParseParquetStream(inputStream)
 
+    val check = Utilities.checkIfStreamIsCompressed(inputStream)
     if(check)
       return Utilities.getParseCompressedStream(inputStream)
 
-    try {
-      Utilities.getParseParquetStream(inputStream)
-    } catch {
-      case _: Throwable => Utilities.getParsePlainStream(inputStream)
-    }
+    Utilities.getParsePlainStream(inputStream)
   }
 
   private def generateReferenceKey(s3Bucket: String, s3Prefix: String) = {

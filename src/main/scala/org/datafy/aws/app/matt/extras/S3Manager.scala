@@ -18,7 +18,7 @@ object S3Manager {
   private val AWS_S3_CLIENT = AmazonS3ClientBuilder.defaultClient()
 
   val S3_MAX_SCAN_SIZE: Int = 3145728 * 1024 * 1024
-  val S3_MAX_RESULTS: Int = 20
+  val S3_MAX_RESULTS: Int = 5
 
   def getMyBucketsSummary() = {
     val allBuckets = AWS_S3_CLIENT.listBuckets()
