@@ -1,20 +1,17 @@
+sudo: required
 language: scala
+services:
+- docker
 scala:
-  - 2.11.2
+- 2.11.2
 env:
-  - AWS_DEFAULT_REGION=eu-west-1
-
+- AWS_DEFAULT_REGION=eu-west-1
 script:
-  - sbt -jvm-opts travis/jvmopts.compile compile
-  - sbt assembly
-
-script:
-  - sbt ++$TRAVIS_SCALA_VERSION test assembly
-
-
+- sbt ++$TRAVIS_SCALA_VERSION test assembly
 deploy:
   provider: s3
-  access_key_id: AKIAIF3BLLM5VMAJMY5Q
+  access_key_id:
+    secure: df/n6kw46YOFlJm1R/ckIVVxiMY2tbDJPjHAESO+ZerVelTYL+9dEMYciZ75Lt6HaqR9k2Sky40OhWGIpla5rS+i15F+LatIaDfN4KtdnXM8dEXSvt2LrldKKiVePo22xR3bjQMMYc46vXEBviMeTseYy3Gk+WBjMDl9ios1/PzPslsTxVJPlRRm53PLMe0Zdofo6KZhY6uCX0Guz38mMalytkXiEGibKZTYPJRqoDk3AgUoQrwos+Fn/72aofxQM0aOGNxDp3r8vB5H9pEupcsfgySMeiwLWose7IH94+v+RPZIq2AJBE4sqhV2q/y8wKvXXaBLEEI7W5C8TQJDdjKIkDYo+kF5tn6g753WndgVrKbPkvB7Pdx/nXbbzld0P1LeoGwe9mG+Ddvi3snCHdnP0eXr/s9nFQ5LS3PuyYydwVO1Zh9MY26YcJHJsNdjUC/uuDnOBxlon2e5219cCvag1ecv4O1B+uybkFt0nKY0ENQ0wQs9RzSgnH1qIgT+sB44Lw4lK+7RtwXO7IkK93fuka3FmC0XpJ6gwCUlJ/t/kepoXVwVmpuiy0h7ymdhBs3ay6AOohyU58osOl9/Z41ih1bX8MFLPuAqlXBOqZUZc+cTHqJMtnURs+/Nl4/xVv2Lu4qQFtFNqQUq3Oq3aM1Y1UiU8/Y6xECei+vZ2Og=
   secret_access_key:
     secure: MovnbK+JOEIJr6ouRuPpiSpuORH0inJK+annQNJSwzlXGcW4Dy06b+TOpdzIcZylfCLwqqBjWrfldGbKVlRR+CzVva7NKpTuqEvS+ZBoE/YPab8AO6sq2LdsebHPFl7RcA7XJmT8uFbxmGbrkDgK0PREvfUY/DlOBWz1g9VevdZXN82O5OjVTVzkfM+aCi9nfb1FCt1GhspDi6IGkEbMdev0kStIcW1xRhFTG1qHBNAPe/yHMQsWcCe0bXDXZlUE/usPiRRZXxEPQJg003TBvVWHtqEPquXetrDShW72lovWaetPDJZ31O/uDO0mxxulPcPzUAgrLYBMUpL8wICP8MZQ6JmiK2DRf9fZz1YdnBTqkF5hb+05vD5b1QD2rxiGPdimyp//zhz3N5esvid8MFyb2kplaMONdNbkoL8qxb4haVumvM7+T2QExKmM+yK+oYXLMBFZ2jNBqKNTVo8PVoiUUVIfhJTbs1euKzk5v76dtWeh3SC4KvpW7wur9wwqSHpHcXNe1YFBXRouyzy245VjQse61irJGI12mvD/meGFTb9ZAI2p7WeHbKaqrT2O+1J+3pdRDlcwRxFdeXkmjX+dcvvUncC84mYdhSO7JN9JuC+sxTY35cea2TLtKrFUghq+sMaAvU6tEHL90BjuPTsZ2kbJ4eOD7zF2AskLweA=
   bucket: datafy-data-lake-public-artifacts
@@ -23,3 +20,13 @@ deploy:
   region: eu-west-1
   local_dir: deploy_app/artifacts
   upload-dir: project-matt
+after_success:
+- pip install --user awscli
+- export PATH=$PATH:$HOME/.local/bin
+- AWS_ACCOUNT_ID="$( aws sts get-caller-identity --output text --query 'Account' )"
+- aws cp deploy_app/cloudformation/matt-job-template.yaml s3://datafy-data-lake-public-artifacts/project-matt/cloudformation/
+- aws cloudformation validate-template --template-url https://s3-eu-west-1.amazonaws.com/datafy-data-lake-public-artifacts/project-matt/cloudformation/matt-job.template.yaml
+- aws ecr get-login --no-include-email --region eu-west-1
+- docker build -t oelesin/project-matt deploy_app/
+- docker tag oelesin/project-matt:latest ${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-1.amazonaws.com/oelesin/project-matt:latest
+- docker push ${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-1.amazonaws.com/oelesin/project-matt:latest

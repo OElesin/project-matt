@@ -248,11 +248,11 @@ Resources:
         - Ref: Subnet
         SecurityGroupIds:
         - Ref: SecurityGroup
-#      Environment:
-#        Variables:
-#          JobName: !Ref ProdApplicationJob
-#          JobQueue: !Ref HighPriorityJobQueue
-#          JobDefinition: !GetAtt ProdApplicationJob.jobDefinitionName
+      Environment:
+        Variables:
+          JobName: !Ref ProdApplicationJob
+          JobQueue: !Ref HighPriorityJobQueue
+          JobDefinition: !Ref ProdApplicationJob
       Events:
         StartJob:
           Type: Schedule

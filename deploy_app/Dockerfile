@@ -1,6 +1,6 @@
 FROM amazonlinux:latest
 
-MAINTAINER Datafy Ventures <lekan@datafy.com.ng>
+MAINTAINER Olalekan Fuad Elesin <elesin.olalekan@gmail.com>
 
 # Install aws-cli openjdk-7-jdk and wget
 RUN yum -y install aws-cli java-1.8.0 wget
