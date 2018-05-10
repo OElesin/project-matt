@@ -5,7 +5,7 @@ services:
 scala:
 - 2.11.2
 script:
-- sbt -jvm-opts travis/jvmopts ++$TRAVIS_SCALA_VERSION clean test assembly
+- sbt -jvm-opts travis/jvmopts ++$TRAVIS_SCALA_VERSION 'set test in assembly := {}' clean assembly
 deploy:
   provider: s3
   access_key_id:
