@@ -8,7 +8,7 @@ env:
 - AWS_DEFAULT_REGION=eu-west-1
 - JVM_OPTS=-Xss16m
 script:
-- sbt ++$TRAVIS_SCALA_VERSION clean test assembly
+- sbt -jvm-opts travis/jvmopts ++$TRAVIS_SCALA_VERSION clean test assembly
 deploy:
   provider: s3
   access_key_id:
