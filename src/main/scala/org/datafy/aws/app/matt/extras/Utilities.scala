@@ -37,7 +37,7 @@ object Utilities {
       return "Could not scan inputStream less than 0 bytes"
     }
     autoDetectParser.parse(inputStream, bodyContentHandler, fileMetadata)
-    return bodyContentHandler.toString
+    bodyContentHandler.toString
   }
 
   @throws(classOf[IOException])
@@ -86,10 +86,7 @@ object Utilities {
       magicBytes = inputStream.read() & 0xff | ((inputStream.read() << 8) & 0xff00)
       inputStream.reset()
     } catch  {
-      case ioe: IOException => {
-        ioe.printStackTrace()
-        false
-      }
+      case ioe: IOException => ioe.printStackTrace()
     }
     magicBytes == GZIPInputStream.GZIP_MAGIC
   }

@@ -18,8 +18,7 @@ import org.apache.parquet.format.converter.ParquetMetadataConverter
 import org.apache.parquet.tools.read.{SimpleReadSupport, SimpleRecord}
 import org.apache.tika.exception.TikaException
 import org.apache.tika.sax.XHTMLContentHandler
-
-import scala.collection.mutable
+import scala.util.Random
 
 
 class TikaParquetParser extends AbstractParser {
@@ -38,10 +37,12 @@ class TikaParquetParser extends AbstractParser {
   def parse(stream: InputStream, handler: ContentHandler,
             metadata: Metadata, context: ParseContext): Unit = {
     // create temp file from stream
-    val tempFile = File.createTempFile("parquet", "tmp")
+    val fileNamePrefix = Random.alphanumeric.take(5).mkString
+    val tempFile = File.createTempFile(s"parquet-${fileNamePrefix}", "tmp")
     IOUtils.copy(stream, new FileOutputStream(tempFile))
     val conf = new Configuration()
     val path = new Path(tempFile.getAbsolutePath)
+    stream.close()
     val parquetMetadata = ParquetFileReader.readFooter(conf, path, ParquetMetadataConverter.NO_FILTER)
 
     val columns = parquetMetadata.getFileMetaData.getSchema.getFields
