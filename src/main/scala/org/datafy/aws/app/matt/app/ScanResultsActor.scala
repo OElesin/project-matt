@@ -1,19 +1,18 @@
 package org.datafy.aws.app.matt.app
 
-import akka.actor.{Actor, ActorLogging, Props}
-import org.datafy.aws.app.matt.models.ScanObjectsModel
+import akka.actor.{Actor, ActorLogging, PoisonPill, Props}
+import akka.event.Logging
 
-class ScanResultsActor extends Actor with ActorLogging {
-  import ScanResultsActor._
+class ScanResultsActor extends Actor {
+
+  val log = Logging(context.system, this)
+
   def receive = {
-    case ScanRequestActor.ScanRequestMessage(fullScanResults) =>
+    case text =>
       // save results here and send summary report
-      log.info(s"Size of objects Scanned ${fullScanResults.totalObjectsSize.get}\n" +
-        "Total number of bytes scanned 2000\n" +
-        "Estimated AWS Services Cost:\n" +
-        s"\t\t AWS S3: USD {}\n ")
-      // notifier ScanRequestActor when done shutdown system
-      sender() ! ScanResultsMessage("Done ")
+      log.info(s"New message from executing actor - ScanRequestActor: ${text}")
+      sender() ! PoisonPill
+      self ! PoisonPill
   }
 }
 

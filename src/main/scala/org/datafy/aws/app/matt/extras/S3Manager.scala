@@ -18,7 +18,7 @@ object S3Manager {
   private val AWS_S3_CLIENT = AmazonS3ClientBuilder.defaultClient()
 
   val S3_MAX_SCAN_SIZE: Int = 3145728 * 1024 * 1024
-  val S3_MAX_RESULTS: Int = 5
+  val S3_MAX_RESULTS: Int = 1000
 
   def getMyBucketsSummary() = {
     val allBuckets = AWS_S3_CLIENT.listBuckets()
@@ -44,20 +44,22 @@ object S3Manager {
                                 .withStartAfter(lastScannedObject.getOrElse(""))
 
     val objectSummaries = AWS_S3_CLIENT.listObjectsV2(objectsV2Request).getObjectSummaries
-    objectSummaries.asScala.toList.map{
-      s3Object => S3KeySummary(s3Object.getBucketName, s3Object.getKey,
-        s3Object.getSize.toInt, Some(s3Object.getLastModified)
+    objectSummaries.asScala.toList
+      .filter( _.getKey != keyPrefix )
+      .map {
+        s3Object => S3KeySummary(s3Object.getBucketName, s3Object.getKey,
+          s3Object.getSize.toInt, Some(s3Object.getLastModified)
       )
     }
   }
 
   def getObjectContentAsStream(bucketName: String, objectKey: String) ={
     val contentStream = AWS_S3_CLIENT.getObject(bucketName, objectKey)
-    contentStream.getObjectContent()
+    contentStream.getObjectContent
   }
 
   def computeTotalObjectSize(s3KeySummary: List[S3KeySummary]) = {
-    val bucketSummaryTuple = s3KeySummary.map{
+    val bucketSummaryTuple = s3KeySummary.map {
       s3Object => (s3Object.bucketName, s3Object.size)
     }.groupBy(_._1).mapValues(_.map(_._2).sum).toList
     bucketSummaryTuple

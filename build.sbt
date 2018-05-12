@@ -76,3 +76,5 @@ lazy val execScript = taskKey[Unit]("Execute the shell script")
 execScript := {
   "aws s3 cp deploy_app/artifacts/project-matt_1.0-BETA.jar s3://datafy-data-lake-public-artifacts/project-matt/ --acl public-read" !
 }
+
+trapExit := false

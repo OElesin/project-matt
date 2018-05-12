@@ -6,6 +6,7 @@ import io.dataapps.chlorine.pattern.RegexFinder
 import scala.collection.mutable.ArrayBuffer
 import scala.collection.JavaConverters._
 import org.datafy.aws.app.matt.extras.{And, Or}
+import org.datafy.aws.app.matt.models.RiskStats
 
 object RegexClassifier {
 
@@ -46,10 +47,11 @@ object RegexClassifier {
     this
   }
 
-  def computeRiskStats() : List[Map[String, String]] = {
+  def computeRiskStats() : List[RiskStats] = {
     val baseRiskStats =  matches.groupBy(_._1) mapValues(_.flatMap(_._2.asScala) size )
     val asList: List[(String, Int)] = baseRiskStats.map { case(pii, count) => (pii, count) }.toList
-    val payload = asList.map(x => Map("piiColumn" -> x._1, "value" -> x._2.toString))
+
+    val payload = asList.map(x => RiskStats(piiColumn = x._1, value = x._2))
     println(payload)
     payload
   }

@@ -89,14 +89,14 @@ object ElasticWrapper {
           textField("s3Bucket"),
           textField("lastScannedKey"),
           textField("classifier"),
-          dateField("scannedDate").format("yyyy-MM-dd HH:mm:ss"),
+          dateField("scannedDate").format("yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis"),
           nestedField("summaryStats") fields(
             textField("piiColumnName"),
             intField("value")
           ),
           nestedField("objectScanStats") fields(
             textField("s3Key"),
-            dateField("scannedDate").format("yyyy-MM-dd HH:mm:ss"),
+            dateField("scannedDate").format("yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis"),
             textField("classifier"),
             nestedField("objectSummaryStats") fields (
               textField("piiColumnName"),
@@ -127,7 +127,6 @@ object ElasticWrapper {
       val response = client.execute {
         indexInto(INDEX_NAME / TYPE_NAME) doc fullScanStats refresh RefreshPolicy.IMMEDIATE
       }.await(20 seconds)
-      println("Done saving data: ", response)
       response
     } catch {
       case e: Throwable => e.printStackTrace()

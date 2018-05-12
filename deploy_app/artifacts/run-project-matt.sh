@@ -17,4 +17,4 @@ echo $JAVA_HOME
 
 aws s3 cp s3://datafy-data-lake-public-artifacts/project-matt/project-matt_1.0-BETA.jar /tmp/project-matt_1.0-BETA.jar
 
-java -jar /tmp/project-matt_1.0-BETA.jar
+java -jar /tmp/project-matt_1.0-BETA.jar -Dlog4j.configurationFile=/tmp/log4j2.xml

@@ -10,22 +10,22 @@ import io.circe.generic.semiauto._
 import io.circe.generic.auto._
 import io.circe.syntax._
 
+case class RiskStats(piiColumn: String, value: Int)
+
 case class ObjectScanStats (
   s3Key: String,
-  objectSummaryStats: List[Map[String, String]],
+  objectSummaryStats: List[RiskStats],
   classifier: String = "",
-  scannedDate: String =  ZonedDateTime.now.
-    format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'"))
+  scannedDate: Long =  System.currentTimeMillis()
 )
 
 case class FullScanStats (
   s3Bucket: String,
   lastScannedKey: String,
-  summaryStats: List[Map[String, String]],
+  summaryStats: List[RiskStats],
   objectScanStats: List[ObjectScanStats],
   classifier: String = "",
-  scannedDate: String =  ZonedDateTime.now.
-    format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")),
+  scannedDate: Long =  System.currentTimeMillis(),
   totalObjectsSize: Option[Int] = None
 )
 
@@ -34,16 +34,15 @@ object ScanObjectsModel {
   val logger = LoggerFactory.getLogger("ScanObjectsModel")
 
   def saveScannedResults(scanStats: FullScanStats) = {
-    logger.debug("attempting some saving here")
+    logger.info("attempting some saving here")
 
     val response = ElasticWrapper.saveDocument(scanStats)
-    logger.debug("Payload saved: some saving here")
+    logger.info("Payload saved: some saving here")
     response
   }
 
   def getLastScannedFromRedis(key: String) = {
     val lastScannedKey = RedisWrapper.getData(key)
-    logger.info(s"Last Scanned Key: ${lastScannedKey}")
     lastScannedKey
   }
 
