@@ -240,9 +240,9 @@ Resources:
   BatchJobLambdaScheduler:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: index.handler
-      Runtime: nodejs6.2
-      CodeUri: index.js
+      Handler: job_trigger.lambda_handler
+      Runtime: python3.6
+      CodeUri: ../lambda/job_trigger.py
       VpcConfig:
         Subnets:
         - Ref: Subnet

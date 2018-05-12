@@ -5,9 +5,9 @@ var AWS = require('aws-sdk');
 var batch = new AWS.Batch();
 
 // get exports
-var jobQueue = ""
-var jobName = ""
-var jobDefinition = ""
+var jobQueue = "jobQueue"
+var jobName = "jobName"
+var jobDefinition = "jobDefinition"
 
 
 // job params
