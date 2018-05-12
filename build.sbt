@@ -23,6 +23,7 @@ libraryDependencies ++= Seq(
   "net.debasishg"  %% "redisclient" % "3.6",
   "org.visallo" % "visallo-core" % "4.0.0",
   "org.json" % "json" % "20180130",
+  "org.apache.httpcomponents" % "httpcore" % "4.4.9",
   "com.sksamuel.elastic4s" %% "elastic4s-core" % elastic4sVersion,
   "com.sksamuel.elastic4s" %% "elastic4s-jackson" % elastic4sVersion,
   "com.sksamuel.elastic4s" %% "elastic4s-http" % elastic4sVersion,
@@ -34,9 +35,9 @@ libraryDependencies ++= Seq(
   "com.sksamuel.elastic4s" %% "elastic4s-circe" % elastic4sVersion,
   "com.sksamuel.elastic4s" %% "elastic4s-json4s" % elastic4sVersion,
   // logging libs
-  "org.apache.logging.log4j" % "log4j-core" % "2.9.0",
-  "org.apache.logging.log4j" % "log4j-api" % "2.9.0",
-  "org.apache.logging.log4j" % "log4j-to-slf4j" % "2.9.0",
+  "org.apache.logging.log4j" % "log4j-core" % "2.7",
+  "org.apache.logging.log4j" % "log4j-api" % "2.7",
+  "org.apache.logging.log4j" % "log4j-to-slf4j" % "2.7",
   "org.slf4j" % "slf4j-simple" % "1.7.21",
 
   "ch.qos.logback" % "logback-classic" % "1.2.3",
@@ -55,6 +56,11 @@ libraryDependencies ++= Seq(
   "org.apache.hadoop" % "hadoop-common" % "2.7.2",
   "org.apache.parquet" % "parquet-tools" % "1.10.0",
   "org.apache.hadoop" % "hadoop-mapreduce-client-core" % "2.7.2",
+  // orc
+  "org.apache.hive" % "hive-serde" % "2.3.0",
+  "org.apache.hive" % "hive-common" % "2.3.0",
+  "org.apache.orc" % "orc-core" % "1.4.3",
+  "org.apache.orc" % "orc-tools" % "1.4.3",
   "org.scalamock" %% "scalamock" % "4.1.0" % Test
 )
 

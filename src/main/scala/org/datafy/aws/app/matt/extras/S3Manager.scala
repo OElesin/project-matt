@@ -27,7 +27,7 @@ object S3Manager {
 
   def getBucketObjects(bucketName: String) = {
     val bucketObjects = AWS_S3_CLIENT.listObjectsV2(bucketName)
-    val objectSummaries = bucketObjects.getObjectSummaries()
+    val objectSummaries = bucketObjects.getObjectSummaries
     objectSummaries.asScala.toList.map{
       s3Object =>  S3KeySummary(s3Object.getBucketName, s3Object.getKey,
         s3Object.getSize.toInt, Some(s3Object.getLastModified)
@@ -41,8 +41,9 @@ object S3Manager {
                                 .withBucketName(bucketName)
                                 .withPrefix(keyPrefix)
                                 .withMaxKeys(S3_MAX_RESULTS)
+                                .withStartAfter(lastScannedObject.getOrElse(""))
 
-    val objectSummaries = AWS_S3_CLIENT.listObjectsV2(objectsV2Request).getObjectSummaries()
+    val objectSummaries = AWS_S3_CLIENT.listObjectsV2(objectsV2Request).getObjectSummaries
     objectSummaries.asScala.toList.map{
       s3Object => S3KeySummary(s3Object.getBucketName, s3Object.getKey,
         s3Object.getSize.toInt, Some(s3Object.getLastModified)

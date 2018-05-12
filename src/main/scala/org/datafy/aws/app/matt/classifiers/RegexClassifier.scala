@@ -5,12 +5,15 @@ import io.dataapps.chlorine.pattern.RegexFinder
 
 import scala.collection.mutable.ArrayBuffer
 import scala.collection.JavaConverters._
+import org.datafy.aws.app.matt.extras.{And, Or}
 
 object RegexClassifier {
+
 
   private val customFinders =  ArrayBuffer[Finder]()
 
   private var matches = List[(String, java.util.List[String])]()
+  private var riskStats: List[(String, Int)] = List[(String, Int)]()
 
   private val EU_IBAN_FINDER = new RegexFinder("EU_IBAN",
     "[A-Z]{2}?[ ]?[0-9]{2}[\n]?[0-9]{4}[ ]?[0-9]{4}[ ]?[0-9]{4}[ ]?[0-9]{4}[ ]?[0-9]{4}")
@@ -43,22 +46,32 @@ object RegexClassifier {
     this
   }
 
-  def computeRiskStats() = {
-    val riskStats =  matches.groupBy(_._1) mapValues(_.flatMap(_._2.asScala) size )
-    riskStats.map { case(pii, count) => (pii, count) }.toList
+  def computeRiskStats() : List[Map[String, String]] = {
+    val baseRiskStats =  matches.groupBy(_._1) mapValues(_.flatMap(_._2.asScala) size )
+    val asList: List[(String, Int)] = baseRiskStats.map { case(pii, count) => (pii, count) }.toList
+    val payload = asList.map(x => Map("piiColumn" -> x._1, "value" -> x._2.toString))
+    println(payload)
+    payload
+  }
+
+  def getDocumentRiskLevels(): RiskLevel.Value = {
+    val sumScores = this.riskStats.map(_._2).sum
+    val ccAndEmails: Seq[(String, Int)] = this.riskStats filter And (_._1 == "CreditCard", _._1 == "Email")
+    val emailsCount: Int = this.riskStats.filter(_._1 == "Email").map(_._2).sum
+
+    if(sumScores > 50 || ccAndEmails.nonEmpty)
+      return RiskLevel.High
+    if(emailsCount >= 5 && !sumScores.isNaN)
+      return RiskLevel.Medium
+    if(emailsCount < 5 && !sumScores.isNaN)
+      return RiskLevel.Low
+
+    RiskLevel.Low
   }
 
 }
 
 object RiskLevel extends Enumeration {
-
-  protected case class Val(lowerBound: Int, upperBound: Int) extends super.Val {
-//    def piiImpact: String = RiskLevel.
-  }
-
   type RiskLevel = Value
-  val Very_High = Value(50)
-  val High = Value(40)
-  val Medium = Value(20)
-  val Low = Value(10)
+  val High,  Medium, Low = Value
 }

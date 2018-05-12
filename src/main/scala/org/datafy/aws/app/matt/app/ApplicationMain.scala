@@ -1,6 +1,7 @@
 package org.datafy.aws.app.matt.app
 
 import akka.actor.{ActorSystem, Props}
+import org.datafy.aws.app.matt.extras.ElasticWrapper
 
 object ApplicationMain extends App {
 
@@ -20,7 +21,8 @@ object ApplicationMain extends App {
     )
     // initialize scan request on bucket
     objectScanRequestActor !  ScanRequestActor.Initialize
-
+    System.setProperty("log4j2.debug", "")
+    ElasticWrapper.getClusterConnection().rest.close()
     system.terminate()
 
 }

@@ -18,7 +18,7 @@ create Kibana dashboards to report your DLP exposure.
 ### Classifiers
 1. **Regex**: Currently the app detects of some key European personal data regexp patterns.
 However, you can fork the project and add more regex expressions. You can read more on
-the available classifiers [here](docs/README.md).
+the available classifiers [here](docs/).
 
 2. **Keyword Matching**: This is currently in development. This is not released yet.
 This is due large amount of domain expertise is required on this topic.

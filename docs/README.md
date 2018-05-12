@@ -5,6 +5,6 @@ Project Matt: Classifiers
 
 Listed below are the available classifiers supported by Project Matt:
 
-- [Regex Classifier](Regex Classifier.md) (Now Available)
-- [Keywords Classifier](Keywords Classifier.md) (Active Development)
-- [Support Vector Machines (SVM) Classifier](Keywords Classifier.md) (Next Major Release)
+- [Regex Classifier](Regex Classifier.md) - Now Available
+- [Keywords Classifier](Keywords Classifier.md) - Active Development
+- [Support Vector Machines (SVM) Classifier](Keywords Classifier.md) - Next Major Release

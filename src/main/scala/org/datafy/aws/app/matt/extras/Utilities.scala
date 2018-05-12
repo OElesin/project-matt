@@ -90,7 +90,13 @@ object Utilities {
     }
     magicBytes == GZIPInputStream.GZIP_MAGIC
   }
+}
+
+case class And[A]( p1: A=>Boolean, p2: A=>Boolean ) extends (A=>Boolean) {
+  def apply( a: A ) = p1(a) && p2(a)
+}
 
 
-
+case class Or[A]( p1: A=>Boolean, p2: A=>Boolean ) extends (A=>Boolean) {
+  def apply( a: A ) = p1(a) || p2(a)
 }

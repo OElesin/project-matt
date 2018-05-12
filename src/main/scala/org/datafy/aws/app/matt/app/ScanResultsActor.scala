@@ -8,7 +8,6 @@ class ScanResultsActor extends Actor with ActorLogging {
   def receive = {
     case ScanRequestActor.ScanRequestMessage(fullScanResults) =>
       // save results here and send summary report
-      val savedId = ScanObjectsModel.saveScannedResults(fullScanResults)
       log.info(s"Size of objects Scanned ${fullScanResults.totalObjectsSize.get}\n" +
         "Total number of bytes scanned 2000\n" +
         "Estimated AWS Services Cost:\n" +
