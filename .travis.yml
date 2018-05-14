@@ -19,12 +19,11 @@ deploy:
   local_dir: deploy_app/artifacts
   upload-dir: project-matt
 after_success:
-- pip install --user awscli
+- pip install --user awscli aws-sam-cli
 - export PATH=$PATH:$HOME/.local/bin
-- AWS_ACCOUNT_ID="$( aws sts get-caller-identity --output text --query 'Account' )"
-- aws cp deploy_app/cloudformation/matt-job-template.yaml s3://datafy-data-lake-public-artifacts/project-matt/cloudformation/
-- aws cloudformation validate-template --template-url https://s3-eu-west-1.amazonaws.com/datafy-data-lake-public-artifacts/project-matt/cloudformation/matt-job.template.yaml
-- aws ecr get-login --no-include-email --region eu-west-1
-- docker build -t oelesin/project-matt deploy_app/
-- docker tag oelesin/project-matt:latest ${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-1.amazonaws.com/oelesin/project-matt:latest
-- docker push ${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-1.amazonaws.com/oelesin/project-matt:latest
+- sam package --template-file deploy_app/cloudformation/matt-job.template.yaml --s3-bucket datafy-data-lake-public-artifacts --s3-prefix project-matt/lambda --output-template-file matt-job-packaged.template.yaml
+- aws cp deploy_app/cloudformation/matt-job-packaged.template.yaml s3://datafy-data-lake-public-artifacts/project-matt/cloudformation/
+- aws cp deploy_app/cloudformation/static-stacks/matt-infrastructure-stack.template.yaml s3://datafy-data-lake-public-artifacts/project-matt/cloudformation/matt-infrastructure-stack.template.yaml
+- aws cloudformation validate-template --template-url https://s3-eu-west-1.amazonaws.com/datafy-data-lake-public-artifacts/project-matt/cloudformation/matt-job-packaged.template.yaml
+- aws cloudformation validate-template --template-url https://s3-eu-west-1.amazonaws.com/datafy-data-lake-public-artifacts/project-matt/cloudformation/matt-infrastructure-stack.template.yaml
+

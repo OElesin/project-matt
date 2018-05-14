@@ -42,29 +42,27 @@ All compression file formats supported by Apache Tika are available.
 
 ### Deployment
 An AWS Cloudformation template that deploys the jar app as an AWS Batch job
-is available. [<img src="https://s3.amazonaws.com/cloudformation-examples/cloudformation-launch-stack.png" width="150"> ](https://console.aws.amazon.com/cloudformation/home?region=eu-west-1#/stacks/new?stackName=Project-Matt-S3-PII-Scan&templateURL=https://s3-eu-west-1.amazonaws.com/datafy-data-lake-public-artifacts/project-matt/cloudformation/matt-job.template.yaml). 
+is available. 
 
 **NOTE: You can only scan S3 buckets in the same region as where your template
 is deployed.**
 
-#### Requirements
-- Elasticsearch Cluster with HTTPS enabled: This is used to save scan reports
-- Kibana: For dashboards and visualizations
-- Redis: This is used to maintain the state of the application. Keeps track of last
-scanned files and some other application metadata.
+#### Requirements and Deployment
+Deploying Project Matt to your AWS environment is in the following stages [<img src="https://s3.amazonaws.com/cloudformation-examples/cloudformation-launch-stack.png" width="150"> ](https://console.aws.amazon.com/cloudformation/home?region=eu-west-1#/stacks/new?stackName=Project-Matt-S3-PII-Scan&templateURL=https://s3-eu-west-1.amazonaws.com/datafy-data-lake-public-artifacts/project-matt/cloudformation/matt-instrastructure-stack.template.yaml):
+1. Deploy the infrastructure i.e 
+    - AWS Elasticsearch Service (comes with Kibana)
+    - AWS ElastiCache (Redis engine)
+2. Build the Docker Image located in `deploy_app/Dockerfile` and push to your AWS ECR. 
+You can read more about how to get this done [here](). *Make sure you copy the link to the ECR repository.* 
+3. Deploy the cloudformation template here and fill the necessary parameters [<img src="https://s3.amazonaws.com/cloudformation-examples/cloudformation-launch-stack.png" width="150"> ](https://console.aws.amazon.com/cloudformation/home?region=eu-west-1#/stacks/new?stackName=Project-Matt-S3-PII-Scan&templateURL=https://s3-eu-west-1.amazonaws.com/datafy-data-lake-public-artifacts/project-matt/cloudformation/matt-job-packaged.template.yaml):
+    - Target S3 Bucket: **[Required]**
+    - Target S3 Prefix: *[Optional]*  (**MUST BE IN THE S3 BUCKET**)
+    - AWS ECR Repository for Project Matt container **[Required]**
+    - Backend Stack Name: The stack name of Project Matt infrastructure. Required for accessing its exports
 
-#### Deployment
-You will need to set some environment variables which are set
-via the cloudformation template. They include:
-- Elasticsearch Host URL `ES_HOST` (Uses HTTPS Client)
-- Elasticsearch Username `ES_USERNAME` (*if http auth is enabled*)
-- Elasticsearch Username `ES_PASSWD` (*if http auth is enabled*)
-- AWS S3 Bucket to scan `MY_S3_BUCKET`
-- AWS S3 Prefix to scan `MY_S3_PREFIX` (**MUST BE IN THE S3 BUCKET**)
-- Redis Host URL `REDIS_HOST` 
-- Redis Username `REDIS_USERNAME` (*if auth is enabled*)
-- Redis Username `REDIS_PASSWD`(*if auth is enabled*)
 
+
+##### Deployment
 By default, maximum number of AWS S3 objects to be scanned is set to 2000. This we assume
 is more ideal for performance purposes.
 
@@ -75,7 +73,7 @@ for S3 charges. For AWS Batch, you only pay by the instance type you select when
 deploying the template. By default, the template makes use of spot instances also to save
 cost.
 
-Cost estimation does not cover supporting infrastructure such as Elasticsearch and Redis instances. 
+Cost Estimation with [AWS Simple Calculator](http://calculator.s3.amazonaws.com/index.html#r=DUB&key=calc-D453A023-4A61-45E8-B25C-6CAE99BCD15F) 
 
 
 ### License

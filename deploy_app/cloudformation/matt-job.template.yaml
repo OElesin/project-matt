@@ -1,5 +1,8 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: 'AWS CloudFormation Template to deploy Project Matt to run in your AWS Account.'
+Description: >
+  AWS CloudFormation Template to deploy Project Matt to run in your AWS Account.
+  This template requires imports from the matt-infrastructure-stack.template.yaml.
+  Hence, should only be deployed after that.
 Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
@@ -11,59 +14,26 @@ Metadata:
           - TargetS3Prefix
       -
         Label:
-          default: "Redis Cluster Configuration Settings"
+          default: "AWS ECR Repository for Project Matt Docker Image"
         Parameters:
-          - RedisHost
-          - RedisPort
-          - RedisPasswd
-          - RedisDatabase
+          - ECRRepository
       -
         Label:
-          default: "Elasticsearch Cluster Configuration Settings"
+          default: "Stack name for Project Matt redis and elasticsearch stack"
         Parameters:
-          - ElasticsearchHost
-          - ElasticsearchUser
-          - ElasticsearchPasswd
+          - BackendStackName
     ParameterLabels:
       TargetS3Bucket:
         default: "S3 Bucket your want to scan for PII in this region"
       TargetS3Prefix:
         default: "Specify prefix inside the above bucket"
 Parameters:
-  RedisHost:
+  BackendStackName:
     Type: String
-    Description: 'The host name of your redis cluster'
-    ConstraintDescription: 'Provide Redis Cluster host name: `RedisHost`'
-  RedisPort:
-    Type: Number
-    Description: 'The port name of your redis cluster'
-    ConstraintDescription: 'Provide Redis Cluster port number: `RedisPort`'
-    MinValue: 1150
-    MaxValue: 65535
-  RedisPasswd:
-    NoEcho: true
+    Description: "Stack name for Project Matt redis and elasticsearch stack"
+  ECRRepository:
     Type: String
-    AllowedPattern: ^[a-zA-Z0-9]*$
-    Description: 'The password name of your redis cluster: `RedisPasswd`'
-    Default: ''
-  RedisDatabase:
-    Type: String
-    Description: 'Redis database to use. Default is `0`'
-    Default: '0'
-  ElasticsearchHost:
-    Type: String
-    Description: 'Host name and port of your elasticsearch cluster'
-    ConstraintDescription: '`ElasticsearchHost` cannot be empty. Format: `<hostname>:<port>`'
-  ElasticsearchUser:
-    Type: String
-    Description: 'HTTP authentication username of your elasticsearch cluster'
-    ConstraintDescription: '`ElasticsearchUser` cannot be empty. E.g: elastic'
-  ElasticsearchPasswd:
-    NoEcho: true
-    Type: String
-    Description: 'HTTP authentication username of your elasticsearch cluster'
-    AllowedPattern: ^[a-zA-Z0-9]*$
-    ConstraintDescription: '`ElasticsearchPasswd` cannot be empty. E.g: somePassword555'
+    Description: "ECR Repository containing Project Matt Docker Image"
   TargetS3Bucket:
     Type: String
     Description: 'AWS S3 Bucket to scan for PII. Specify without `s3://`'
@@ -168,8 +138,9 @@ Resources:
     Type: AWS::Batch::JobDefinition
     Properties:
       Type: container
+      JobDefinitionName: ProdApplicationJobDef
       ContainerProperties:
-        Image: !Sub "514965996716.dkr.ecr.eu-west-1.amazonaws.com/datafy/project-matt:latest"
+        Image: !Ref ECRRepository
         Vcpus: 8
         Memory: 16000
         Command:
@@ -181,56 +152,70 @@ Resources:
           - Name: MY_S3_PREFIX
             Value: !Ref TargetS3Prefix
           - Name: REDIS_HOST
-            Value: !Ref RedisHost
+            Value:
+              Fn::ImportValue:
+                !Sub "${BackendStackName}-Redis-Server"
           - Name: REDIS_PASSWD
-            Value: !Ref RedisPasswd
+            Value: "" # set this if you have redis password set
           - Name: REDIS_PORT
-            Value: !Ref RedisPort
+            Value:
+              Fn::ImportValue:
+                !Sub "${BackendStackName}-Redis-Server-Port"
           - Name: REDIS_DB
-            Value: !Ref RedisDatabase
+            Value: 0
           - Name: ES_HOST
-            Value: !Ref ElasticsearchHost
+            Value:
+              Fn::ImportValue:
+                !Sub "${BackendStackName}-DomainEndPoint"
           - Name: ES_USERNAME
-            Value: !Ref ElasticsearchUser
+            Value: "" # set this if you have HTTP auth enabled
           - Name: ES_PASSWD
-            Value: !Ref ElasticsearchPasswd
+            Value: "" # set this if you have HTTP auth enabled
       RetryStrategy:
         Attempts: 1
   TestApplicationJob:
     Type: AWS::Batch::JobDefinition
     Properties:
       Type: container
+      JobDefinitionName: TestApplicationJobDef
       ContainerProperties:
-        Image: !Sub "514965996716.dkr.ecr.eu-west-1.amazonaws.com/datafy/project-matt:latest"
+        Image: !Ref ECRRepository
         Vcpus: 2
         Memory: 2000
         Command:
         - echo
         - Hello World, I am a low priority job
         Environment:
-        - Name: MY_S3_BUCKET
-          Value: !Ref TargetS3Bucket
-        - Name: MY_S3_PREFIX
-          Value: !Ref TargetS3Prefix
-        - Name: REDIS_HOST
-          Value: !Ref RedisHost
-        - Name: REDIS_PASSWD
-          Value: !Ref RedisPasswd
-        - Name: REDIS_PORT
-          Value: !Ref RedisPort
-        - Name: REDIS_DB
-          Value: !Ref RedisDatabase
-        - Name: ES_HOST
-          Value: !Ref ElasticsearchHost
-        - Name: ES_USERNAME
-          Value: !Ref ElasticsearchUser
-        - Name: ES_PASSWD
-          Value: !Ref ElasticsearchPasswd
+          - Name: MY_S3_BUCKET
+            Value: !Ref TargetS3Bucket
+          - Name: MY_S3_PREFIX
+            Value: !Ref TargetS3Prefix
+          - Name: REDIS_HOST
+            Value:
+              Fn::ImportValue:
+                !Sub "${BackendStackName}-Redis-Server"
+          - Name: REDIS_PASSWD
+            Value: "" # set this if you have redis password set
+          - Name: REDIS_PORT
+            Value:
+              Fn::ImportValue:
+                !Sub "${BackendStackName}-Redis-Server-Port"
+          - Name: REDIS_DB
+            Value: 0
+          - Name: ES_HOST
+            Value:
+              Fn::ImportValue:
+                !Sub "${BackendStackName}-DomainEndPoint"
+          - Name: ES_USERNAME
+            Value: "" # set this if you have HTTP auth enabled
+          - Name: ES_PASSWD
+            Value: "" # set this if you have HTTP auth enabled
       RetryStrategy:
         Attempts: 1
   HighPriorityJobQueue:
     Type: AWS::Batch::JobQueue
     Properties:
+      JobQueueName: HighPriorityJobQueue
       Priority: 1
       ComputeEnvironmentOrder:
       - Order: 1
@@ -242,7 +227,7 @@ Resources:
     Properties:
       Handler: job_trigger.lambda_handler
       Runtime: python3.6
-      CodeUri: ../lambda/job_trigger.py
+      CodeUri: ../lambda/
       VpcConfig:
         Subnets:
         - Ref: Subnet
@@ -250,7 +235,7 @@ Resources:
         - Ref: SecurityGroup
       Environment:
         Variables:
-          JobName: !Ref ProdApplicationJob
+          JobName: !Sub "${AWS::StackName}-Job"
           JobQueue: !Ref HighPriorityJobQueue
           JobDefinition: !Ref ProdApplicationJob
       Events:

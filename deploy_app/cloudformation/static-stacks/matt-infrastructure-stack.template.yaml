@@ -1,0 +1,170 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >
+  Create an AMI from an EC2 instance to serve Project Matt Backend.
+Parameters:
+  DeploymentStage:
+    Description: "Deployment Stage for Project Matt"
+    Type: String
+    Default: dev
+  ImageId:
+    Description: Image ID for base EC2 instance.
+    Type: AWS::EC2::Image::Id
+    # amzn-ami-hvm-2016.09.1.20161221-x86_64-gp2
+    Default: ami-4cdd453f
+  InstanceType:
+    Description: Instance type to launch EC2 instances.
+    Type: String
+    Default: m4.medium
+    AllowedValues: [ m4.medium, m4.large, m4.xlarge, m4.2xlarge ]
+  SSHLocation:
+    Description: ""
+    Type: String
+    MinLength: 9
+    MaxLength: 18
+    Default: 0.0.0.0/0
+    AllowedPattern: "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})"
+    ConstraintDescription: "must be a valid IP CIDR range of the form x.x.x.x/x."
+Resources:
+  # Backend server for project-matt to host kibana
+  MattRedisCluster:
+    Type: AWS::ElastiCache::CacheCluster
+    Properties:
+      CacheNodeType: cache.m2.xlarge
+      CacheSecurityGroupNames:
+        - !Ref MattRedisClusterSecurityGroup
+      Engine: redis
+      NumCacheNodes: 1
+  MattRedisClusterSecurityGroup:
+    Type: AWS::ElastiCache::SecurityGroup
+    Properties:
+      Description: "Lock Cluster Down"
+  MattRedisClusterSecurityGroupIngress:
+    Type: AWS::ElastiCache::SecurityGroupIngress
+    Properties:
+      CacheSecurityGroupName: !Ref MattRedisClusterSecurityGroup
+      EC2SecurityGroupName: !Ref MattBackendServerSecurityGroup
+  MattElasticsearchDomain:
+    Type: AWS::Elasticsearch::Domain
+    Properties:
+      DomainName: !Sub "project-matt-es-${DeploymentStage}-cluster"
+      ElasticsearchVersion: 5.5
+      ElasticsearchClusterConfig:
+        InstanceCount: '1'
+        InstanceType: 'm3.medium.elasticsearch'
+      EBSOptions:
+        EBSEnabled: 'true'
+        Iops: 0
+        VolumeSize: 10
+        VolumeType: standard
+      SnapshotOptions:
+        AutomatedSnapshotStartHour: '0'
+      AccessPolicies:
+        Version: 2012-10-17
+        Statement:
+          -
+            Effect: Allow
+            Principal:
+              Service:
+              - ec2.amazonaws.com
+            Action: "es:*"
+            Resource: !Sub "arn:aws:es:${AWS::Region}::domain/project-matt-es-${DeploymentStage}-cluster/*"
+          -
+            Effect: Allow
+            Principal:
+              AWS: "*"
+            Action: "es:*"
+            Condition:
+              IpAddress:
+                aws:SourceIp:
+                  - 95.91.215.209
+            Resource: !Sub "arn:aws:es:${AWS::Region}::domain/project-matt-es-${DeploymentStage}-cluster/*"
+          -
+            Effect: Allow
+            Principal:
+              AWS: "*"
+            Action: "es:*"
+            Resource:  !Sub "arn:aws:es:${AWS::Region}:${AWS::AccountId}:domain/*"
+
+      AdvancedOptions:
+        rest.action.multi.allow_explicit_index: 'true'
+      Tags:
+      - Key: Stage
+        Value: !Ref DeploymentStage
+#      VPCOptions: TODO Add VPC options
+
+  MattBackendServerRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          -
+            Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: /
+  MattBackendServerPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: MattBackendServerRole
+      PolicyDocument:
+        Statement:
+          -
+            Effect: Allow
+            Action: elasticache:DescribeCacheClusters
+            Resource: "*"
+      Roles:
+        - !Ref MattBackendServerRole
+  MattBackendServerInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Path: /
+      Roles:
+      - !Ref MattBackendServerRole
+
+  MattBackendServerSecurityGroup:
+    Type: "AWS::EC2::SecurityGroup"
+    Properties:
+      GroupDescription: "Enable HTTP, HTTPS and SSH access to Project Matt Backend server"
+      SecurityGroupIngress:
+        -
+          IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: !Ref SSHLocation
+        -
+          IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        -
+          IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+Outputs:
+  DomainArn:
+    Value: !GetAtt MattElasticsearchDomain.DomainArn
+    Export:
+      Name: !Sub "${AWS::StackName}-EsArn"
+  DomainEndpoint:
+    Value: !GetAtt MattElasticsearchDomain.DomainEndpoint
+    Export:
+      Name: !Sub "${AWS::StackName}-DomainEndPoint"
+  SecurityGroupId:
+    Value: !Ref MattBackendServerSecurityGroup
+    Export:
+      Name: !Sub "${AWS::StackName}-SGId"
+  RedisClusterAddress:
+    Value: !GetAtt MattRedisCluster.RedisEndpoint.Address
+    Export:
+      Name: !Sub "${AWS::StackName}-Redis-Server"
+  RedisClusterPort:
+    Value: !GetAtt MattRedisCluster.RedisEndpoint.Port
+    Export:
+      Name: !Sub "${AWS::StackName}-Redis-Server-Port"
+#  SubnetId:
+#    Value: !Ref subnet
+
