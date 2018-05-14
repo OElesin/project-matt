@@ -48,13 +48,13 @@ is available.
 is deployed.**
 
 #### Requirements and Deployment
-Deploying Project Matt to your AWS environment is in the following stages [<img src="https://s3.amazonaws.com/cloudformation-examples/cloudformation-launch-stack.png" width="150"> ](https://console.aws.amazon.com/cloudformation/home?region=eu-west-1#/stacks/new?stackName=Project-Matt-S3-PII-Scan&templateURL=https://s3-eu-west-1.amazonaws.com/datafy-data-lake-public-artifacts/project-matt/cloudformation/matt-instrastructure-stack.template.yaml):
+Deploying Project Matt to your AWS environment is in the following stages [<img src="https://s3.amazonaws.com/cloudformation-examples/cloudformation-launch-stack.png" width="150"> ](https://console.aws.amazon.com/cloudformation/home?region=eu-west-1#/stacks/new?stackName=Project-Matt-Infrastructure&templateURL=https://s3-eu-west-1.amazonaws.com/datafy-data-lake-public-artifacts/project-matt/cloudformation/matt-infrastructure-stack.template.yaml):
 1. Deploy the infrastructure i.e 
     - AWS Elasticsearch Service (comes with Kibana)
     - AWS ElastiCache (Redis engine)
 2. Build the Docker Image located in `deploy_app/Dockerfile` and push to your AWS ECR. 
 You can read more about how to get this done [here](). *Make sure you copy the link to the ECR repository.* 
-3. Deploy the cloudformation template here and fill the necessary parameters [<img src="https://s3.amazonaws.com/cloudformation-examples/cloudformation-launch-stack.png" width="150"> ](https://console.aws.amazon.com/cloudformation/home?region=eu-west-1#/stacks/new?stackName=Project-Matt-S3-PII-Scan&templateURL=https://s3-eu-west-1.amazonaws.com/datafy-data-lake-public-artifacts/project-matt/cloudformation/matt-job-packaged.template.yaml):
+3. Deploy the cloudformation template here and fill the necessary parameters [<img src="https://s3.amazonaws.com/cloudformation-examples/cloudformation-launch-stack.png" width="150"> ](https://console.aws.amazon.com/cloudformation/home?region=eu-west-1#/stacks/new?stackName=Project-Matt-S3-PII-Scan-Job&templateURL=https://s3-eu-west-1.amazonaws.com/datafy-data-lake-public-artifacts/project-matt/cloudformation/matt-job-packaged.template.yaml):
     - Target S3 Bucket: **[Required]**
     - Target S3 Prefix: *[Optional]*  (**MUST BE IN THE S3 BUCKET**)
     - AWS ECR Repository for Project Matt container **[Required]**

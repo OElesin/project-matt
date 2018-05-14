@@ -229,7 +229,7 @@ Resources:
       Runtime: python3.6
       CodeUri: ../lambda/
       VpcConfig:
-        Subnets:
+        SubnetIds:
         - Ref: Subnet
         SecurityGroupIds:
         - Ref: SecurityGroup

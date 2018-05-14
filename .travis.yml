@@ -21,9 +21,9 @@ deploy:
 after_success:
 - pip install --user awscli aws-sam-cli
 - export PATH=$PATH:$HOME/.local/bin
-- sam package --template-file deploy_app/cloudformation/matt-job.template.yaml --s3-bucket datafy-data-lake-public-artifacts --s3-prefix project-matt/lambda --output-template-file matt-job-packaged.template.yaml
-- aws cp deploy_app/cloudformation/matt-job-packaged.template.yaml s3://datafy-data-lake-public-artifacts/project-matt/cloudformation/
-- aws cp deploy_app/cloudformation/static-stacks/matt-infrastructure-stack.template.yaml s3://datafy-data-lake-public-artifacts/project-matt/cloudformation/matt-infrastructure-stack.template.yaml
+- sam package --template-file deploy_app/cloudformation/matt-job.template.yaml --s3-bucket datafy-data-lake-public-artifacts --s3-prefix project-matt/lambda --output-template-file deploy_app/cloudformation/matt-job-packaged.template.yaml
+- aws s3 cp deploy_app/cloudformation/matt-job-packaged.template.yaml s3://datafy-data-lake-public-artifacts/project-matt/cloudformation/
+- aws s3 cp deploy_app/cloudformation/static-stacks/matt-infrastructure-stack.template.yaml s3://datafy-data-lake-public-artifacts/project-matt/cloudformation/matt-infrastructure-stack.template.yaml
 - aws cloudformation validate-template --template-url https://s3-eu-west-1.amazonaws.com/datafy-data-lake-public-artifacts/project-matt/cloudformation/matt-job-packaged.template.yaml
 - aws cloudformation validate-template --template-url https://s3-eu-west-1.amazonaws.com/datafy-data-lake-public-artifacts/project-matt/cloudformation/matt-infrastructure-stack.template.yaml
 
