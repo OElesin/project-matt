@@ -25,7 +25,54 @@ Parameters:
     AllowedPattern: "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})"
     ConstraintDescription: "must be a valid IP CIDR range of the form x.x.x.x/x."
 Resources:
-  # Backend server for project-matt to host kibana
+  # Backend infrastructure for Project Matt
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+  RouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Ref: VPC
+  VPCGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId:
+        Ref: VPC
+      InternetGatewayId:
+        Ref: InternetGateway
+  SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security Group for the EC2 instances launched into the VPC by Batch
+      VpcId:
+        Ref: VPC
+  Subnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      CidrBlock: 10.0.0.0/24
+      VpcId:
+        Ref: VPC
+      MapPublicIpOnLaunch: 'True'
+  Route:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId:
+        Ref: RouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId:
+        Ref: InternetGateway
+  SubnetRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId:
+        Ref: RouteTable
+      SubnetId:
+        Ref: Subnet
+#
   MattRedisCluster:
     Type: AWS::ElastiCache::CacheCluster
     Properties:
@@ -144,6 +191,10 @@ Resources:
           FromPort: 443
           ToPort: 443
           CidrIp: 0.0.0.0/0
+        -
+          IpProtocol: tcp
+          FromPort: 6379
+          ToPort: !Ref MattRedisClusterSecurityGroup
 Outputs:
   DomainArn:
     Value: !GetAtt MattElasticsearchDomain.DomainArn

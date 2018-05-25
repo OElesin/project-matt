@@ -12,10 +12,6 @@ import org.apache.tika.parser.{AutoDetectParser, ParseContext}
 import org.apache.tika.parser.pkg.CompressorParser
 import org.apache.tika.sax.BodyContentHandler
 
-/**
-  * @author: Datafy Ventures
-  * @groupdesc: Basic Utilities wrapper
-  */
 
 object Utilities {
 

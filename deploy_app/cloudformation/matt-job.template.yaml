@@ -103,6 +103,7 @@ Resources:
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AWSBatchServiceRole
         - arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess
+        - arn:aws:iam::aws:policy/aws-service-role/ElastiCacheServiceRolePolicy
   IamInstanceProfile:
     Type: AWS::IAM::InstanceProfile
     Properties:
@@ -222,12 +223,45 @@ Resources:
         ComputeEnvironment:
           Ref: SpotComputeEnvironment
 
+  BatchJobLambdaSchedulerRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: "/"
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - arn:aws:iam::aws:policy/service-role/AWSBatchServiceRole
+      Policies:
+        -
+          PolicyName: InvokeLambdaInVPC
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              -
+                Effect: Allow
+                Action:
+                  - ec2:CreateNetworkInterface
+                  - ec2:DeleteNetworkInterface
+                  - ec2:DescribeNetworkInterfaces
+                Resource: "*"
+
   BatchJobLambdaScheduler:
     Type: AWS::Serverless::Function
     Properties:
       Handler: job_trigger.lambda_handler
       Runtime: python3.6
       CodeUri: ../lambda/
+      Role: !GetAtt BatchJobLambdaSchedulerRole.Arn
       VpcConfig:
         SubnetIds:
         - Ref: Subnet

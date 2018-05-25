@@ -20,7 +20,7 @@ object BaseClassifier {
     // get last object and cache in redis
     val redisReferenceKey = generateReferenceKey(bucketName, s3Prefix)
     val lastScannedKey = ScanObjectsModel.getLastScannedFromRedis(redisReferenceKey)
-    logger.info(s"Last Scanned S3 Key: ${lastScannedKey.get}")
+    logger.info(s"Last Scanned S3 Key: ${lastScannedKey.getOrElse("This is the first scan")}")
 
     val bucketObjects: List[S3KeySummary] = S3Manager.getBucketObjects(bucketName, s3Prefix, lastScannedKey)
 
